@@ -1,0 +1,61 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number"
+    },
+    "asset": {
+      "type": "string",
+      "enum": [
+        "ETH",
+        "BTC",
+        "USDC",
+        "MATIC"
+      ]
+    },
+    "from_wallet": {
+      "type": "string",
+      "enum": [
+        "vault",
+        "guard",
+        "liquidity"
+      ]
+    },
+    "to_address": {
+      "type": "string"
+    },
+    "network": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "held",
+        "completed",
+        "revoked",
+        "emergency_frozen"
+      ]
+    },
+    "release_at": {
+      "type": "string"
+    },
+    "is_user_initiated": {
+      "type": "boolean",
+      "default": true
+    },
+    "destination_label": {
+      "type": "string"
+    },
+    "usd_value": {
+      "type": "number"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Transaction timestamp"
+    }
+  },
+  "required": []
+}

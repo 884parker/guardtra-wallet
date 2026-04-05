@@ -1,0 +1,44 @@
+{
+  "name": "WalletProfile",
+  "type": "object",
+  "properties": {
+    "wallet_type": {
+      "type": "string",
+      "enum": [
+        "vault",
+        "guard",
+        "liquidity",
+        "recovery"
+      ]
+    },
+    "address": {
+      "type": "string"
+    },
+    "balance_eth": {
+      "type": "number"
+    },
+    "balance_btc": {
+      "type": "number"
+    },
+    "balance_usdc": {
+      "type": "number"
+    },
+    "is_compromised": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_system_managed": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if wallet is managed by backend only (vault, guard, liquidity, recovery). False for user-connected wallets."
+    },
+    "label": {
+      "type": "string"
+    },
+    "network": {
+      "type": "string",
+      "default": "Ethereum"
+    }
+  },
+  "required": []
+}
