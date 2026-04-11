@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Clock, XCircle, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { useLockHours } from '@/hooks/use-lock-hours';
 
-function useCountdown(releaseAt) {
+function useCountdown(releaseAt, lockMs) {
   const [remaining, setRemaining] = useState(0);
 
   useEffect(() => {
@@ -17,13 +18,14 @@ function useCountdown(releaseAt) {
   const hours = Math.floor(remaining / 3600000);
   const minutes = Math.floor((remaining % 3600000) / 60000);
   const seconds = Math.floor((remaining % 60000) / 1000);
-  const progress = remaining > 0 ? (remaining / 86400000) * 100 : 0;
+  const progress = remaining > 0 ? (remaining / lockMs) * 100 : 0;
 
-  return { hours, minutes, seconds, progress, isExpired: remaining === 0 };
+  return { hours, minutes, seconds, progress: Math.min(progress, 100), isExpired: remaining === 0 };
 }
 
 export default function GuardTimer({ transaction, onRevoke, onStartRecovery }) {
-  const { hours, minutes, seconds, progress, isExpired } = useCountdown(transaction.release_at);
+  const { lockHours, lockMs } = useLockHours();
+  const { hours, minutes, seconds, progress, isExpired } = useCountdown(transaction.release_at, lockMs);
   const isUnauthorized = !transaction.is_user_initiated;
 
   const pad = (n) => String(n).padStart(2, '0');
@@ -99,7 +101,7 @@ export default function GuardTimer({ transaction, onRevoke, onStartRecovery }) {
           {isExpired ? (
             <p className="text-xs text-guard mt-2">⏱ Hold expired — auto-releasing shortly...</p>
           ) : (
-            <p className="text-xs text-muted-foreground mt-2">Auto-releases after 24h if not revoked.</p>
+            <p className="text-xs text-muted-foreground mt-2">Auto-releases after {lockHours}h if not revoked.</p>
           )}
         </div>
       </div>

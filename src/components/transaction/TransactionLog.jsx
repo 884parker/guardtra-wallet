@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const STATUS_CONFIG = {
   pending:           { label: 'Pending',   color: 'text-muted-foreground', bg: 'bg-muted', icon: Clock },
-  held:              { label: '24h Hold',  color: 'text-guard',            bg: 'bg-guard/10', icon: ShieldCheck },
+  held:              { label: 'Guard Hold', color: 'text-guard',           bg: 'bg-guard/10', icon: ShieldCheck },
   completed:         { label: 'Completed', color: 'text-accent',           bg: 'bg-accent/10', icon: CheckCircle },
   revoked:           { label: 'Revoked',   color: 'text-destructive',      bg: 'bg-destructive/10', icon: XCircle },
   emergency_frozen:  { label: 'Frozen',    color: 'text-destructive',      bg: 'bg-destructive/10', icon: AlertTriangle },
@@ -52,7 +52,7 @@ function TxRow({ tx }) {
           {status.label}
         </div>
         <div className="text-xs text-muted-foreground mt-0.5">
-          {formatDistanceToNow(new Date(tx.created_date), { addSuffix: true })}
+          {formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}
         </div>
       </div>
     </div>
@@ -65,7 +65,7 @@ export default function TransactionLog({ walletType, limit = 10 }) {
 
   useEffect(() => {
     const query = walletType ? { from_wallet: walletType } : {};
-    base44.entities.Transaction.filter(query, '-created_date', limit)
+    base44.entities.Transaction.filter(query, '-created_at', limit)
       .then(setTxs)
       .catch(() => {})
       .finally(() => setLoading(false));

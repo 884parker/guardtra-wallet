@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Zap, Send, Download, Loader2, Copy } from 'lucide-react';
 import SendModal from '@/components/transaction/SendModal';
 import ReceiveModal from '@/components/wallet/ReceiveModal';
+import TransactionLog from '@/components/transaction/TransactionLog';
 import { base44 } from '@/api/base44Client';
 import OnChainFeed from '@/components/dashboard/OnChainFeed';
 
@@ -95,10 +96,18 @@ export default function Liquidity() {
         </button>
       </div>
 
+      {/* Transaction History */}
+      <div>
+        <h2 className="text-sm font-medium text-muted-foreground mb-3">Recent Transactions</h2>
+        <div className="bg-card border border-border rounded-2xl px-4">
+          <TransactionLog walletType="liquidity" limit={10} />
+        </div>
+      </div>
+
       {/* On-chain feed */}
       {walletAddress && <OnChainFeed wallets={[{ wallet_type: 'liquidity', address: walletAddress }]} />}
 
-      {showSend && <SendModal fromWallet="liquidity" onClose={() => setShowSend(false)} onSent={() => {}} />}
+      {showSend && <SendModal fromWallet="liquidity" onClose={() => setShowSend(false)} onSent={() => { setLoading(true); base44.entities.WalletProfile.filter({ wallet_type: 'liquidity' }).then(async profiles => { const address = profiles[0]?.address; if (!address) { setLoading(false); return; } const res = await base44.functions.invoke('getWalletBalance', { address }).catch(() => null); setBalanceEth(res?.data?.balance_eth ?? 0); setBalanceUsdc(res?.data?.balance_usdc ?? 0); setLoading(false); }).catch(() => setLoading(false)); }} />}
       {showReceive && <ReceiveModal address={walletAddress} walletLabel="Liquidity" onClose={() => setShowReceive(false)} />}
     </div>
   );

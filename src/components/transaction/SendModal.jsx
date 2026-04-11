@@ -1,22 +1,34 @@
 import { useState, useEffect } from 'react';
-import { X, AlertTriangle, CheckCircle, Shield, ExternalLink, Loader2, ShieldCheck } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle, Shield, ExternalLink, Loader2, ShieldCheck, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import GasTracker from '@/components/gas/GasTracker';
+import { useLockHours } from '@/hooks/use-lock-hours';
+import { useNetwork } from '@/hooks/use-network';
 
 const ASSETS = ['ETH', 'USDC', 'MATIC'];
-const NETWORKS = ['Ethereum (Sepolia)', 'Polygon', 'Arbitrum'];
+const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 
 export default function SendModal({ fromWallet, onClose, onSent }) {
+  const { networkName, txUrl: buildTxUrl, isTestnet } = useNetwork();
   const [step, setStep] = useState('form'); // form | review | sending | sent
-  const [form, setForm] = useState({ amount: '', asset: 'ETH', to_address: '', network: 'Ethereum (Sepolia)', destination_label: '' });
+  const [form, setForm] = useState({ amount: '', asset: 'ETH', to_address: '', network: '', destination_label: '' });
   const [loading, setLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
   const [txError, setTxError] = useState('');
   const [guardAddress, setGuardAddress] = useState('');
+  const [addressError, setAddressError] = useState('');
+
+  const { lockHours, lockMs } = useLockHours();
 
   const isVault = fromWallet === 'vault';
+  const isLiquidity = fromWallet === 'liquidity';
   const ethPrice = 2450;
   const usdValue = form.asset === 'ETH' ? parseFloat(form.amount || 0) * ethPrice : parseFloat(form.amount || 0);
+
+  useEffect(() => {
+    // Set network in form once loaded
+    if (networkName && !form.network) setForm(f => ({ ...f, network: networkName }));
+  }, [networkName]);
 
   useEffect(() => {
     // Fetch the Guard wallet address so we know where to route Vault sends
@@ -32,7 +44,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
    let hash = '';
 
    try {
-     const releaseAt = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+     const releaseAt = new Date(Date.now() + lockMs).toISOString();
 
      if (isVault && form.asset === 'ETH' && guardAddress) {
        // Step 1: Send ETH from Vault to Guard wallet on-chain (server-side, using vault mnemonic)
@@ -55,6 +67,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
      }
 
       // Step 2: Log the transaction in DB — destination is the user's intended address
+      // Vault sends are 'held' with a future release_at; Liquidity/Guard sends are 'completed' immediately
       await base44.entities.Transaction.create({
         amount: parseFloat(form.amount),
         asset: form.asset,
@@ -62,11 +75,11 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
         to_address: form.to_address,
         network: form.network,
         destination_label: form.destination_label,
-        status: isVault ? 'held' : 'pending',
+        status: isVault ? 'held' : 'completed',
         release_at: isVault ? releaseAt : new Date().toISOString(),
         is_user_initiated: true,
         usd_value: usdValue,
-        timestamp: new Date().toISOString(),
+        created_at: new Date().toISOString(),
         ...(hash ? { tx_hash: hash } : {}),
       });
 
@@ -95,7 +108,13 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
             {isVault && (
               <div className="flex items-start gap-2 bg-vault/10 border border-vault/30 rounded-xl p-3 mb-4">
                 <Shield className="w-4 h-4 text-vault mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-vault">Vault transfers are routed through Guard Wallet with a 24-hour security hold before reaching the destination.</p>
+                <p className="text-xs text-vault">Vault transfers are routed through Guard Wallet with a {lockHours}-hour security hold before reaching the destination.</p>
+              </div>
+            )}
+            {isLiquidity && (
+              <div className="flex items-start gap-2 bg-liquidity/10 border border-liquidity/30 rounded-xl p-3 mb-4">
+                <Zap className="w-4 h-4 text-liquidity mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-liquidity"><strong>Instant send</strong> — Liquidity transactions go directly to the recipient with no time lock. Double-check the address before confirming.</p>
               </div>
             )}
 
@@ -116,16 +135,21 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Destination Address</label>
-                <input value={form.to_address} onChange={e => setForm(f => ({...f, to_address: e.target.value}))}
-                  className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground font-mono focus:outline-none focus:border-primary" placeholder="0x..." />
+                <input value={form.to_address} onChange={e => {
+                  const addr = e.target.value;
+                  setForm(f => ({...f, to_address: addr}));
+                  setAddressError(addr && !isValidEthAddress(addr) ? 'Invalid Ethereum address' : '');
+                }}
+                  className={`w-full bg-muted border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground font-mono focus:outline-none focus:border-primary ${addressError ? 'border-destructive' : 'border-border'}`} placeholder="0x..." />
+                {addressError && <p className="text-xs text-destructive mt-1">{addressError}</p>}
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground mb-1 block">Network</label>
-                  <select value={form.network} onChange={e => setForm(f => ({...f, network: e.target.value}))}
-                    className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary">
-                    {NETWORKS.map(n => <option key={n}>{n}</option>)}
-                  </select>
+                  <div className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm text-foreground flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${isTestnet ? 'bg-amber-400' : 'bg-accent'}`} />
+                    {networkName}
+                  </div>
                 </div>
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground mb-1 block">Label (optional)</label>
@@ -142,7 +166,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
             </div>
             <button
               onClick={() => setStep('review')}
-              disabled={!form.amount || !form.to_address}
+              disabled={!form.amount || !form.to_address || !isValidEthAddress(form.to_address)}
               className="w-full mt-4 bg-primary text-primary-foreground rounded-xl py-3 font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity"
             >
               Review Transaction
@@ -159,12 +183,19 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">To</span><span className="font-mono text-xs">{form.to_address.slice(0,10)}...{form.to_address.slice(-8)}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Network</span><span>{form.network}</span></div>
               {form.gasGwei && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Gas ({form.gasSpeed})</span><span className="text-muted-foreground">{form.gasGwei} Gwei</span></div>}
-              {isVault && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Hold</span><span className="text-guard">24 hours via Guard</span></div>}
+              {isVault && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Hold</span><span className="text-guard">{lockHours} hours via Guard</span></div>}
+              {isLiquidity && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Hold</span><span className="text-liquidity">None — instant send</span></div>}
             </div>
             {isVault && (
               <div className="flex items-start gap-2 bg-guard/10 border border-guard/30 rounded-xl p-3 mb-4">
                 <Shield className="w-4 h-4 text-guard mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-guard">Funds will be sent from your Vault to Guard and held for 24 hours — you can revoke anytime.</p>
+                <p className="text-xs text-guard">Funds will be sent from your Vault to Guard and held for {lockHours} hours — you can revoke anytime.</p>
+              </div>
+            )}
+            {isLiquidity && (
+              <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4">
+                <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-400">This transaction sends <strong>immediately</strong> with no time lock. It cannot be revoked once confirmed. Please verify the address and amount.</p>
               </div>
             )}
             {txError && <p className="text-xs text-destructive mb-3">{txError}</p>}
@@ -179,9 +210,11 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
 
         {step === 'sending' && (
           <div className="text-center py-10">
-            <Loader2 className="w-10 h-10 animate-spin text-vault mx-auto mb-4" />
-            <p className="text-sm font-medium text-foreground">Sending from Vault to Guard...</p>
-            <p className="text-xs text-muted-foreground mt-1">Broadcasting transaction on Sepolia. This may take ~15 seconds.</p>
+            <Loader2 className={`w-10 h-10 animate-spin mx-auto mb-4 ${isLiquidity ? 'text-liquidity' : 'text-vault'}`} />
+            <p className="text-sm font-medium text-foreground">
+              {isVault ? 'Sending from Vault to Guard...' : isLiquidity ? 'Sending from Liquidity...' : 'Sending from Guard...'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">Broadcasting transaction on {networkName}. This may take ~15 seconds.</p>
           </div>
         )}
 
@@ -190,18 +223,22 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
             <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-7 h-7 text-accent" />
             </div>
-            <h3 className="font-semibold mb-1">{isVault ? 'Routed to Guard' : 'Transaction Sent'}</h3>
+            <h3 className="font-semibold mb-1">{isVault ? 'Routed to Guard' : isLiquidity ? 'Sent Instantly' : 'Transaction Sent'}</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              {isVault ? 'Funds are held in Guard Wallet for 24 hours. You can revoke from the Guard page.' : 'Transaction submitted to network.'}
+              {isVault
+                ? `Funds are held in Guard Wallet for ${lockHours} hours. You can revoke from the Guard page.`
+                : isLiquidity
+                  ? 'Your transaction has been sent directly to the recipient — no hold, no delay.'
+                  : 'Transaction submitted to network.'}
             </p>
             {txHash && (
               <a
-                href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                href={buildTxUrl(txHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline mb-4"
               >
-                <ExternalLink className="w-3 h-3" /> View on Sepolia Etherscan
+                <ExternalLink className="w-3 h-3" /> View on Explorer
               </a>
             )}
             <button onClick={onClose} className="w-full mt-2 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">Done</button>

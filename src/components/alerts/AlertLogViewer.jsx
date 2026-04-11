@@ -14,7 +14,7 @@ export default function AlertLogViewer() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.AlertLog.list('-created_date', 20).then(setLogs).finally(() => setLoading(false));
+    base44.entities.AlertLog.list('-created_at', 20).then(setLogs).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -49,7 +49,7 @@ export default function AlertLogViewer() {
                   <p className="text-sm text-foreground mt-1">{log.message}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                     <span>→ {log.email_sent_to}</span>
-                    {log.created_date && <span>{formatDistanceToNow(new Date(log.created_date), { addSuffix: true })}</span>}
+                    {log.created_at && <span>{formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}</span>}
                   </div>
                 </div>
               </div>

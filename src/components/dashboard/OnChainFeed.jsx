@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowUpRight, ArrowDownLeft, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { txUrl, getActiveNetwork } from '@/lib/network-config';
 import { formatDistanceToNow } from 'date-fns';
 
 const WALLET_COLORS = {
@@ -44,7 +45,7 @@ function TxRow({ tx, walletMap }) {
           {isOutgoing ? '-' : '+'}{value} {tx.asset || 'ETH'}
         </div>
         <a
-          href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
+          href={txUrl(tx.hash)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={e => e.stopPropagation()}
@@ -121,12 +122,12 @@ export default function OnChainFeed({ wallets }) {
         {transfers.length > 0 && (
           <div className="border-t border-border px-4 py-3 flex items-center justify-center">
             <a
-              href="https://sepolia.etherscan.io"
+              href={getActiveNetwork().explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
             >
-              <ExternalLink className="w-3 h-3" /> View all on Sepolia Etherscan
+              <ExternalLink className="w-3 h-3" /> View all on {getActiveNetwork().explorerName}
             </a>
           </div>
         )}

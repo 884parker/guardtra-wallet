@@ -16,7 +16,7 @@ export default function AssetTransactions({ asset }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Transaction.filter({ asset }, '-created_date', 50)
+    base44.entities.Transaction.filter({ asset }, '-created_at', 50)
       .then(setTxs)
       .finally(() => setLoading(false));
   }, [asset]);
@@ -61,7 +61,7 @@ export default function AssetTransactions({ asset }) {
                   {status.label}
                 </div>
                 {tx.usd_value > 0 && <p className="text-xs text-muted-foreground mt-0.5">${tx.usd_value.toLocaleString()}</p>}
-                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(tx.created_date), { addSuffix: true })}</p>
+                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}</p>
               </div>
             </div>
           );

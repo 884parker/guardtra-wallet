@@ -8,8 +8,11 @@ const SPEED_CONFIG = {
 };
 
 async function fetchGasPrices(alchemyKey) {
-  // Use eth_gasPrice and eth_feeHistory via Alchemy
-  const rpc = `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}`;
+  // Use eth_gasPrice and eth_feeHistory via public Sepolia RPC
+  // TODO: switch to mainnet Alchemy when going live
+  const rpc = alchemyKey && alchemyKey !== 'demo'
+    ? `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`
+    : 'https://ethereum-sepolia-rpc.publicnode.com';
   const [feeHistRes, gasRes] = await Promise.all([
     fetch(rpc, {
       method: 'POST',

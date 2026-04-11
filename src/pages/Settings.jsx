@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, Save, AlertTriangle } from 'lucide-react';
+import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, Save, AlertTriangle, Clock, Globe } from 'lucide-react';
 
 const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 import SeedPhraseModal from '@/components/wallet/SeedPhraseModal';
@@ -7,6 +7,12 @@ import SetPinModal from '@/components/settings/SetPinModal';
 import AlertRulesManager from '@/components/alerts/AlertRulesManager';
 import AlertLogViewer from '@/components/alerts/AlertLogViewer';
 import { base44 } from '@/api/base44Client';
+
+const LOCK_OPTIONS = [
+  { value: 6,  label: '6 hours',  desc: 'Faster releases, moderate protection' },
+  { value: 12, label: '12 hours', desc: 'Balanced speed and security' },
+  { value: 24, label: '24 hours', desc: 'Maximum protection (recommended)' },
+];
 
 export default function Settings() {
   const [seedWallet, setSeedWallet] = useState(null);
@@ -18,6 +24,18 @@ export default function Settings() {
   const [safeWalletSaving, setSafeWalletSaving] = useState(false);
   const [safeWalletSaved, setSafeWalletSaved] = useState(false);
 
+  // Guard lock time
+  const [lockHours, setLockHours] = useState(24);
+  const [lockConfigId, setLockConfigId] = useState(null);
+  const [lockSaving, setLockSaving] = useState(false);
+  const [lockSaved, setLockSaved] = useState(false);
+
+  // Network
+  const [activeNetwork, setActiveNetwork] = useState('sepolia');
+  const [networkConfigId, setNetworkConfigId] = useState(null);
+  const [networkSaving, setNetworkSaving] = useState(false);
+  const [networkSaved, setNetworkSaved] = useState(false);
+
   useEffect(() => {
     base44.entities.AppConfig.filter({ key: 'security_pin' })
       .then(res => setPinExists(res.length > 0))
@@ -27,7 +45,45 @@ export default function Settings() {
         if (res[0]) { setsafeWalletAddress(res[0].value); setsafeWalletConfigId(res[0].id); }
       })
       .catch(() => {});
+    base44.entities.AppConfig.filter({ key: 'guard_lock_hours' })
+      .then(res => {
+        if (res[0]) { setLockHours(parseInt(res[0].value) || 24); setLockConfigId(res[0].id); }
+      })
+      .catch(() => {});
+    base44.entities.AppConfig.filter({ key: 'active_network' })
+      .then(res => {
+        if (res[0]) { setActiveNetwork(res[0].value || 'sepolia'); setNetworkConfigId(res[0].id); }
+      })
+      .catch(() => {});
   }, []);
+
+  const saveNetwork = async (networkId) => {
+    setActiveNetwork(networkId);
+    setNetworkSaving(true);
+    if (networkConfigId) {
+      await base44.entities.AppConfig.update(networkConfigId, { value: networkId });
+    } else {
+      const rec = await base44.entities.AppConfig.create({ key: 'active_network', value: networkId });
+      setNetworkConfigId(rec.id);
+    }
+    setNetworkSaving(false);
+    setNetworkSaved(true);
+    setTimeout(() => setNetworkSaved(false), 2000);
+  };
+
+  const saveLockHours = async (hours) => {
+    setLockHours(hours);
+    setLockSaving(true);
+    if (lockConfigId) {
+      await base44.entities.AppConfig.update(lockConfigId, { value: String(hours) });
+    } else {
+      const rec = await base44.entities.AppConfig.create({ key: 'guard_lock_hours', value: String(hours) });
+      setLockConfigId(rec.id);
+    }
+    setLockSaving(false);
+    setLockSaved(true);
+    setTimeout(() => setLockSaved(false), 2000);
+  };
 
   const savesafeWalletAddress = async () => {
     setSafeWalletSaving(true);
@@ -75,6 +131,43 @@ export default function Settings() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Guard Lock Time */}
+      <div>
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Guard Time Lock</h2>
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <Clock className="w-4 h-4 text-guard mt-0.5 flex-shrink-0" />
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-1">Lock Duration</label>
+              <p className="text-xs text-muted-foreground mb-3">How long Vault transactions are held in Guard before auto-releasing. Longer = more time to catch problems.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {LOCK_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => saveLockHours(opt.value)}
+                disabled={lockSaving}
+                className={`relative p-3 rounded-xl border text-center transition-all ${
+                  lockHours === opt.value
+                    ? 'border-guard bg-guard/10 text-guard'
+                    : 'border-border bg-muted/30 text-muted-foreground hover:border-guard/50 hover:bg-guard/5'
+                }`}
+              >
+                <div className="text-lg font-bold">{opt.value}h</div>
+                <div className="text-xs mt-0.5">{opt.value === lockHours ? '✓ Active' : opt.label}</div>
+              </button>
+            ))}
+          </div>
+          {lockSaved && <p className="text-xs text-accent text-center">Lock time updated!</p>}
+          <p className="text-xs text-muted-foreground text-center">
+            {lockHours === 6  && 'Faster releases — good for active traders who keep most funds in Liquidity.'}
+            {lockHours === 12 && 'Balanced protection — enough time to catch most unauthorized activity.'}
+            {lockHours === 24 && 'Maximum protection — the full day gives you the most time to react to threats.'}
+          </p>
         </div>
       </div>
 
@@ -145,14 +238,47 @@ export default function Settings() {
       {/* Network */}
       <div>
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Network</h2>
-        <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
-          <div className="flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <Wifi className="w-4 h-4 text-primary" />
-              <span className="text-sm text-foreground">Active Network</span>
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <Globe className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-1">Active Network</label>
+              <p className="text-xs text-muted-foreground mb-3">Choose which Ethereum network your wallets operate on. Use Sepolia for testing, Mainnet for real transactions.</p>
             </div>
-            <span className="text-sm text-muted-foreground">Ethereum Mainnet (Testnet)</span>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => saveNetwork('sepolia')}
+              disabled={networkSaving}
+              className={`relative p-3 rounded-xl border text-center transition-all ${
+                activeNetwork === 'sepolia'
+                  ? 'border-amber-400 bg-amber-400/10 text-amber-400'
+                  : 'border-border bg-muted/30 text-muted-foreground hover:border-amber-400/50 hover:bg-amber-400/5'
+              }`}
+            >
+              <div className="text-sm font-bold">Sepolia</div>
+              <div className="text-xs mt-0.5">{activeNetwork === 'sepolia' ? '✓ Active' : 'Testnet'}</div>
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm('⚠️ Switching to Mainnet means real money. Make sure your wallets are funded on Ethereum Mainnet. Continue?')) {
+                  saveNetwork('mainnet');
+                }
+              }}
+              disabled={networkSaving}
+              className={`relative p-3 rounded-xl border text-center transition-all ${
+                activeNetwork === 'mainnet'
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-border bg-muted/30 text-muted-foreground hover:border-accent/50 hover:bg-accent/5'
+              }`}
+            >
+              <div className="text-sm font-bold">Mainnet</div>
+              <div className="text-xs mt-0.5">{activeNetwork === 'mainnet' ? '✓ Active' : 'Real ETH'}</div>
+            </button>
+          </div>
+          {networkSaved && <p className="text-xs text-accent text-center">Network updated! Reload the app for changes to take full effect.</p>}
+          {activeNetwork === 'sepolia' && <p className="text-xs text-amber-400 text-center">🧪 Testnet mode — transactions use test ETH with no real value.</p>}
+          {activeNetwork === 'mainnet' && <p className="text-xs text-destructive text-center">⚠️ Mainnet mode — all transactions use REAL ETH.</p>}
         </div>
       </div>
 

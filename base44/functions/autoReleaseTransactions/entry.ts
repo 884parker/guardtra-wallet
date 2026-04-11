@@ -31,9 +31,16 @@ Deno.serve(async (req) => {
     return Response.json({ message: 'No transactions due for release', released: 0 });
   }
 
-  const alchemyKey = Deno.env.get('ALCHEMY_API_KEY');
+  // Determine network
+  const netConfigs = await db.entities.AppConfig.filter({ key: 'active_network' }).catch(() => []);
+  const networkId = netConfigs[0]?.value || 'sepolia';
+
+  const alchemyKey = networkId === 'mainnet'
+    ? Deno.env.get('ALCHEMY_MAINNET_KEY') || Deno.env.get('ALCHEMY_API_KEY')
+    : Deno.env.get('ALCHEMY_API_KEY');
   const guardMnemonic = Deno.env.get('GUARD_MNEMONIC');
-  const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`;
+  const rpcPrefix = networkId === 'mainnet' ? 'eth-mainnet' : 'eth-sepolia';
+  const rpcUrl = `https://${rpcPrefix}.g.alchemy.com/v2/${alchemyKey}`;
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   const guardWallet = ethers.Wallet.fromPhrase(guardMnemonic).connect(provider);

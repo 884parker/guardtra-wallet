@@ -9,6 +9,8 @@ import OnChainFeed from '@/components/dashboard/OnChainFeed';
 import GasTracker from '@/components/gas/GasTracker';
 import PortfolioChart from '@/components/dashboard/PortfolioChart';
 import AssetAllocationChart from '@/components/dashboard/AssetAllocationChart';
+import { useLockHours } from '@/hooks/use-lock-hours';
+import SetupWizard from '@/pages/SetupWizard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,13 +19,27 @@ export default function Dashboard() {
   const [pendingTxs, setPendingTxs] = useState([]);
   const [loadingBalances, setLoadingBalances] = useState(false);
   const [ethPrice, setEthPrice] = useState(0);
+  const [needsSetup, setNeedsSetup] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const [addAddressFor, setAddAddressFor] = useState(null);
+  const { lockHours } = useLockHours();
 
   useEffect(() => {
+    // Check if user needs wallet setup
+    base44.entities.WalletProfile.list().then(profiles => {
+      if (!profiles || profiles.length === 0) {
+        setNeedsSetup(true);
+      }
+      setCheckingSetup(false);
+    }).catch(() => { setNeedsSetup(true); setCheckingSetup(false); });
+  }, []);
+
+  useEffect(() => {
+    if (needsSetup || checkingSetup) return;
     base44.entities.Transaction.filter({ status: 'held' }).then(setPendingTxs).catch(() => {});
     base44.entities.WalletProfile.list().then(async (profiles) => {
       setWallets(profiles);
-      if (profiles.length === 0) return;
+      if (!profiles || profiles.length === 0) return;
       setLoadingBalances(true);
       // Fetch ETH price
       const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd').catch(() => null);
@@ -46,11 +62,23 @@ export default function Dashboard() {
       setBalances(newBalances);
       setLoadingBalances(false);
     }).catch(() => {});
-  }, []);
+  }, [needsSetup, checkingSetup]);
 
   const getEth = (type) => balances[type]?.balance_eth ?? 0;
   const getUsdc = (type) => balances[type]?.balance_usdc ?? 0;
   const totalUSD = (getEth('vault') + getEth('guard') + getEth('liquidity')) * ethPrice + getUsdc('vault') + getUsdc('guard') + getUsdc('liquidity');
+
+  if (checkingSetup) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (needsSetup) {
+    return <SetupWizard onComplete={() => { setNeedsSetup(false); window.location.reload(); }} />;
+  }
 
   return (
     <>
@@ -82,7 +110,7 @@ export default function Dashboard() {
         <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="px-2 py-1 bg-vault/10 text-vault rounded-lg border border-vault/20">Vault</span>
           <ArrowRight className="w-3 h-3" />
-          <span className="px-2 py-1 bg-guard/10 text-guard rounded-lg border border-guard/20">Guard (24h hold)</span>
+          <span className="px-2 py-1 bg-guard/10 text-guard rounded-lg border border-guard/20">Guard ({lockHours}h hold)</span>
           <ArrowRight className="w-3 h-3" />
           <span className="px-2 py-1 bg-muted rounded-lg">Recipient</span>
         </div>
@@ -143,10 +171,8 @@ export default function Dashboard() {
         <h2 className="text-sm font-medium text-muted-foreground mb-3">Assets</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { asset: 'ETH',  price: ethPrice || 2450, change: '+3.2%', up: true  },
-            { asset: 'BTC',  price: 62000,            change: '+1.8%', up: true  },
-            { asset: 'USDC', price: 1,                change: '0.0%',  up: true  },
-            { asset: 'MATIC',price: 0.85,             change: '-1.4%', up: false },
+            { asset: 'ETH',  price: ethPrice || 2450, change: '', up: true  },
+            { asset: 'USDC', price: 1,                change: '',  up: true  },
           ].map(({ asset, price, change, up }) => (
             <button
               key={asset}

@@ -5,6 +5,7 @@ import GuardTimer from '@/components/guard/GuardTimer';
 import EmergencyFlow from '@/components/guard/EmergencyFlow';
 import RevokeConfirmModal from '@/components/guard/RevokeConfirmModal';
 import OnChainFeed from '@/components/dashboard/OnChainFeed';
+import { useLockHours } from '@/hooks/use-lock-hours';
 
 
 
@@ -18,6 +19,7 @@ export default function Guard() {
   const [balanceEth, setBalanceEth] = useState(null);
   const [ethPrice, setEthPrice] = useState(2450);
   const [loadingBalance, setLoadingBalance] = useState(true);
+  const { lockHours } = useLockHours();
 
   useEffect(() => {
     base44.entities.Transaction.filter({ status: 'held' }).then(setDbTxs).catch(() => {});
@@ -82,7 +84,7 @@ export default function Guard() {
             {hasUnauthorized ? (
               <span className="text-xs bg-destructive/20 text-destructive border border-destructive/30 px-3 py-1 rounded-full animate-pulse">⚠ Alert</span>
             ) : (
-              <span className="text-xs bg-guard/10 text-guard border border-guard/30 px-3 py-1 rounded-full">24h Security Hold</span>
+              <span className="text-xs bg-guard/10 text-guard border border-guard/30 px-3 py-1 rounded-full">{lockHours}h Security Hold</span>
             )}
           </div>
         </div>
@@ -170,7 +172,7 @@ export default function Guard() {
       <div className="bg-muted/30 border border-border rounded-xl p-4">
         <h3 className="text-sm font-medium mb-2 text-foreground">How Guard Protection Works</h3>
         <ul className="space-y-1.5 text-xs text-muted-foreground">
-          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>All Vault transfers are held here for 24 hours before release</li>
+          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>All Vault transfers are held here for {lockHours} hours before release</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>You can revoke any transaction during the hold period</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>Unauthorized activity triggers an immediate alert</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>Emergency flow generates a new Vault and migrates held funds</li>

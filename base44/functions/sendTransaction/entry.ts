@@ -36,8 +36,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: `No mnemonic configured for walletType: ${walletType}` }, { status: 500 });
     }
 
-    const apiKey = Deno.env.get('ALCHEMY_API_KEY');
-    const rpcUrl = `https://eth-sepolia.g.alchemy.com/v2/${apiKey}`;
+    // Determine network: check AppConfig for 'active_network', default to sepolia
+    const db = base44.asServiceRole;
+    const netConfigs = await db.entities.AppConfig.filter({ key: 'active_network' }).catch(() => []);
+    const networkId = netConfigs[0]?.value || 'sepolia';
+
+    const apiKey = networkId === 'mainnet'
+      ? Deno.env.get('ALCHEMY_MAINNET_KEY') || Deno.env.get('ALCHEMY_API_KEY')
+      : Deno.env.get('ALCHEMY_API_KEY');
+    const rpcPrefix = networkId === 'mainnet' ? 'eth-mainnet' : 'eth-sepolia';
+    const explorerBase = networkId === 'mainnet' ? 'https://etherscan.io' : 'https://sepolia.etherscan.io';
+
+    const rpcUrl = `https://${rpcPrefix}.g.alchemy.com/v2/${apiKey}`;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const wallet = ethers.Wallet.fromPhrase(mnemonic).connect(provider);
 
@@ -55,7 +65,8 @@ Deno.serve(async (req) => {
       blockNumber: receipt.blockNumber,
       gasUsed: receipt.gasUsed.toString(),
       timestamp: new Date().toISOString(),
-      explorerUrl: `https://sepolia.etherscan.io/tx/${tx.hash}`,
+      explorerUrl: `${explorerBase}/tx/${tx.hash}`,
+      network: networkId,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

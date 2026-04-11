@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react';
 import { X, ShieldCheck, AlertTriangle, Loader2, ExternalLink, ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useNetwork } from '@/hooks/use-network';
 
 export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) {
   const [step, setStep] = useState('confirm'); // confirm | sending | done
   const [txHash, setTxHash] = useState('');
   const [error, setError] = useState('');
+  const { txUrl: buildTxUrl } = useNetwork();
   const [hermitageAddress, setHermitageAddress] = useState('');
 
   useEffect(() => {
-    base44.entities.AppConfig.filter({ key: 'hermitage_address' })
-      .then(res => { if (res[0]?.value) setHermitageAddress(res[0].value); })
+    // Check both keys for backward compatibility (hermitage_address was the old name)
+    base44.entities.AppConfig.filter({ key: 'safe_wallet_address' })
+      .then(res => {
+        if (res[0]?.value) { setHermitageAddress(res[0].value); return; }
+        // Fallback to old key name
+        return base44.entities.AppConfig.filter({ key: 'hermitage_address' });
+      })
+      .then(res => { if (res?.[0]?.value) setHermitageAddress(res[0].value); })
       .catch(() => {});
   }, []);
 
@@ -50,7 +58,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
           status: 'completed',
           is_user_initiated: true,
           usd_value: transaction.usd_value,
-          timestamp: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
       }
 
@@ -129,12 +137,12 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
             </p>
             {txHash && (
               <a
-                href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                href={buildTxUrl(txHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline mb-4"
               >
-                <ExternalLink className="w-3 h-3" /> View on Sepolia Etherscan
+                <ExternalLink className="w-3 h-3" /> View on Explorer
               </a>
             )}
             <button onClick={onClose} className="w-full mt-2 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">Done</button>

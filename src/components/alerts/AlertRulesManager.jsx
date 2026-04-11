@@ -19,7 +19,7 @@ export default function AlertRulesManager() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    base44.entities.AlertRule.list('-created_date').then(setRules).finally(() => setLoading(false));
+    base44.entities.AlertRule.list('-created_at').then(setRules).finally(() => setLoading(false));
   }, []);
 
   const handleAdd = async () => {
