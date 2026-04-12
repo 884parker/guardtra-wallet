@@ -1,5 +1,5 @@
 /**
- * Database abstraction layer — drop-in replacement for Base44 entity calls.
+ * Database abstraction layer — Supabase CRUD + Edge Functions.
  * 
  * Usage:
  *   import { db } from '@/api/db';
@@ -159,7 +159,7 @@ function createTableHelper(tableName) {
   };
 }
 
-// Auth helper — mirrors Base44 auth API
+// Auth helper
 export const auth = {
   async me() {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -210,7 +210,7 @@ export const functions = {
   },
 };
 
-// Table helpers — maps to Base44 entity names
+// Table helpers
 export const db = {
   transactions: createTableHelper('transactions'),
   walletProfiles: createTableHelper('wallet_profiles'),
@@ -223,8 +223,7 @@ export const db = {
   disbursements: createTableHelper('disbursements'),
 };
 
-// Legacy compatibility — matches Base44 entity access pattern
-// Usage: base44.entities.Transaction.filter({...}) → entities.Transaction.filter({...})
+// Legacy compatibility — entity access pattern
 export const entities = {
   Transaction: db.transactions,
   WalletProfile: db.walletProfiles,

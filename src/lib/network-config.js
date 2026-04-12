@@ -6,7 +6,7 @@
  * 
  * To switch to mainnet:
  *   1. Change AppConfig 'active_network' to 'mainnet' in Settings
- *   2. Ensure ALCHEMY_MAINNET_KEY is set in Base44 env secrets
+ *   2. Ensure ALCHEMY_MAINNET_KEY is set in Supabase secrets
  *   3. Ensure wallet mnemonics are funded on mainnet
  */
 

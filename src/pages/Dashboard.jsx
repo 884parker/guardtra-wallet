@@ -10,7 +10,6 @@ import GasTracker from '@/components/gas/GasTracker';
 import PortfolioChart from '@/components/dashboard/PortfolioChart';
 import AssetAllocationChart from '@/components/dashboard/AssetAllocationChart';
 import { useLockHours } from '@/hooks/use-lock-hours';
-import SetupWizard from '@/pages/SetupWizard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,23 +18,10 @@ export default function Dashboard() {
   const [pendingTxs, setPendingTxs] = useState([]);
   const [loadingBalances, setLoadingBalances] = useState(false);
   const [ethPrice, setEthPrice] = useState(0);
-  const [needsSetup, setNeedsSetup] = useState(false);
-  const [checkingSetup, setCheckingSetup] = useState(true);
   const [addAddressFor, setAddAddressFor] = useState(null);
   const { lockHours } = useLockHours();
 
   useEffect(() => {
-    // Check if user needs wallet setup
-    base44.entities.WalletProfile.list().then(profiles => {
-      if (!profiles || profiles.length === 0) {
-        setNeedsSetup(true);
-      }
-      setCheckingSetup(false);
-    }).catch(() => { setNeedsSetup(true); setCheckingSetup(false); });
-  }, []);
-
-  useEffect(() => {
-    if (needsSetup || checkingSetup) return;
     base44.entities.Transaction.filter({ status: 'held' }).then(setPendingTxs).catch(() => {});
     base44.entities.WalletProfile.list().then(async (profiles) => {
       setWallets(profiles);
@@ -62,23 +48,11 @@ export default function Dashboard() {
       setBalances(newBalances);
       setLoadingBalances(false);
     }).catch(() => {});
-  }, [needsSetup, checkingSetup]);
+  }, []);
 
   const getEth = (type) => balances[type]?.balance_eth ?? 0;
   const getUsdc = (type) => balances[type]?.balance_usdc ?? 0;
   const totalUSD = (getEth('vault') + getEth('guard') + getEth('liquidity')) * ethPrice + getUsdc('vault') + getUsdc('guard') + getUsdc('liquidity');
-
-  if (checkingSetup) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (needsSetup) {
-    return <SetupWizard onComplete={() => { setNeedsSetup(false); window.location.reload(); }} />;
-  }
 
   return (
     <>

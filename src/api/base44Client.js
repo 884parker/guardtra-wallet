@@ -1,9 +1,6 @@
 /**
- * Base44 compatibility layer — routes all calls through Supabase.
- * 
- * This file replaces the original Base44 SDK client.
- * All existing code that imports { base44 } from '@/api/base44Client'
- * will now transparently use Supabase instead.
+ * Legacy compatibility shim — all calls route through Supabase.
+ * TODO: Refactor components to import from '@/api/db' directly and delete this file.
  */
 
 import { entities, auth, functions } from './db';
@@ -23,7 +20,7 @@ export const base44 = {
   auth: {
     me: auth.me,
     logout: auth.signOut,
-    redirectToLogin: () => {}, // Handled by AuthContext now
+    redirectToLogin: () => {},
   },
   functions: {
     invoke: async (name, body) => {
@@ -31,7 +28,6 @@ export const base44 = {
       return result;
     },
   },
-  // Service role operations go through Edge Functions
   asServiceRole: {
     entities: {
       Transaction: entities.Transaction,

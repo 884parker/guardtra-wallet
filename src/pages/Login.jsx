@@ -3,28 +3,20 @@ import { useAuth } from '@/lib/AuthContext';
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function Login({ onBack }) {
-  const { signIn, signUp, signInWithGoogle } = useAuth();
-  const [mode, setMode] = useState('login'); // login | signup
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccess('');
 
     try {
-      if (mode === 'login') {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password);
-        setSuccess('Check your email for a confirmation link!');
-      }
+      await signIn(email, password);
     } catch (err) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -41,9 +33,7 @@ export default function Login({ onBack }) {
             <Shield className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Guardtra Wallet</h1>
-          <p className="text-sm text-muted-foreground">
-            {mode === 'login' ? 'Sign in to your wallet' : 'Create your account'}
-          </p>
+          <p className="text-sm text-muted-foreground">Sign in to your wallet</p>
         </div>
 
         {/* Form */}
@@ -74,7 +64,6 @@ export default function Login({ onBack }) {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                minLength={6}
                 style={{ color: '#f0f0f0', backgroundColor: '#1a1a2e' }}
                 className="w-full border border-border rounded-xl pl-10 pr-10 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
               />
@@ -94,19 +83,13 @@ export default function Login({ onBack }) {
             </div>
           )}
 
-          {success && (
-            <div className="bg-accent/10 border border-accent/30 rounded-xl px-3 py-2 text-xs text-accent">
-              {success}
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-medium text-sm hover:opacity-90 disabled:opacity-60 transition-opacity flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
+            Sign In
           </button>
         </form>
 
@@ -131,14 +114,19 @@ export default function Login({ onBack }) {
           Continue with Google
         </button>
 
-        {/* Toggle mode */}
-        <p className="text-center text-sm text-muted-foreground">
-          {mode === 'login' ? (
-            <>Don't have an account? <button onClick={() => { setMode('signup'); setError(''); setSuccess(''); }} className="text-primary hover:underline font-medium">Sign up</button></>
-          ) : (
-            <>Already have an account? <button onClick={() => { setMode('login'); setError(''); setSuccess(''); }} className="text-primary hover:underline font-medium">Sign in</button></>
-          )}
-        </p>
+        {/* Link to Safe wallet for new users */}
+        <div className="bg-card border border-border rounded-xl p-4 text-center space-y-2">
+          <p className="text-sm text-muted-foreground">Don't have an account yet?</p>
+          <a
+            href="https://guardtrasafe.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-medium text-sm"
+          >
+            Sign up at GuardtraSafe first →
+          </a>
+          <p className="text-xs text-muted-foreground">Create your recovery wallet, then come back here to sign in.</p>
+        </div>
 
         {onBack && (
           <p className="text-center">

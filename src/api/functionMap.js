@@ -1,6 +1,5 @@
 /**
- * Maps Base44 function names to Supabase Edge Function names.
- * Base44 used camelCase, Supabase uses kebab-case directory names.
+ * Maps camelCase function names to Supabase Edge Function slugs (kebab-case).
  */
 export const FUNCTION_MAP = {
   'sendTransaction': 'send-transaction',

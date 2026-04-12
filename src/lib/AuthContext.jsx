@@ -28,13 +28,42 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // 20-minute inactivity auto-logout
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+    let timer = setTimeout(() => logout(), TIMEOUT_MS);
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => logout(), TIMEOUT_MS);
+    };
+
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'mousemove'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+    };
+  }, [isAuthenticated]);
+
   const checkSession = async () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw error;
       if (session?.user) {
-        setUser(session.user);
-        setIsAuthenticated(true);
+        // Verify the user still exists (token may be stale after DB wipe)
+        const { data: { user: validUser }, error: userError } = await supabase.auth.getUser();
+        if (userError || !validUser) {
+          await supabase.auth.signOut();
+          setUser(null);
+          setIsAuthenticated(false);
+        } else {
+          setUser(validUser);
+          setIsAuthenticated(true);
+        }
       }
     } catch (err) {
       console.error('Session check failed:', err);
@@ -76,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       user,
       isAuthenticated,
       isLoadingAuth,
-      isLoadingPublicSettings: false, // No longer needed (was Base44-specific)
+      isLoadingPublicSettings: false,
       authError,
       logout,
       signIn,
