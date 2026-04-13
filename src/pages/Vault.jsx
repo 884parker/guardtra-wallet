@@ -81,7 +81,7 @@ export default function Vault() {
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <span className="bg-vault/10 text-vault px-2 py-0.5 rounded">Vault</span>
             <ArrowRight className="w-3 h-3" />
-            <span className="bg-guard/10 text-guard px-2 py-0.5 rounded">Guard ({lockHours}h)</span>
+            <span className="bg-guard/10 text-guard px-2 py-0.5 rounded">Hold ({lockHours}h)</span>
             <ArrowRight className="w-3 h-3" />
             <span className="bg-muted px-2 py-0.5 rounded">Recipient</span>
           </div>

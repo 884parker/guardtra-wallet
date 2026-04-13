@@ -7,7 +7,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 const navItems = [
   { path: '/Dashboard', icon: Layers, label: 'Dashboard' },
   { path: '/Vault', icon: Shield, label: 'Vault' },
-  { path: '/Guard', icon: Activity, label: 'Guard' },
+  { path: '/Hold', icon: Activity, label: 'Hold' },
   { path: '/Liquidity', icon: Zap, label: 'Liquidity' },
   { path: '/Recovery', icon: ShieldCheck, label: 'Recovery' },
   { path: '/Analytics', icon: BarChart2, label: 'Analytics' },
@@ -29,7 +29,7 @@ export default function AppLayout() {
               </div>
               <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full" />
             </div>
-            <span className="font-semibold text-foreground tracking-tight">Guardtra</span>
+            <span className="font-semibold text-foreground tracking-tight">Pause Wallet</span>
           </div>
           <div className="flex items-center gap-2">
             <ConnectWalletButton />

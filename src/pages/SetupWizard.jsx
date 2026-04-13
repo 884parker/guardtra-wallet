@@ -78,7 +78,7 @@ export default function SetupWizard({ onComplete }) {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to Guardtra</h1>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to Pause Wallet</h1>
               <p className="text-muted-foreground">Let's set up your three-layer security system. This takes about 2 minutes.</p>
             </div>
 
@@ -90,8 +90,8 @@ export default function SetupWizard({ onComplete }) {
                     <span className="text-xs font-bold text-green-400">1</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Set up GuardtraSafe first</p>
-                    <p className="text-xs text-muted-foreground">Your emergency recovery wallet — set this up at guardtrasafe.com, then paste the address here.</p>
+                    <p className="text-sm font-medium text-foreground">Set up PauseSafe first</p>
+                    <p className="text-xs text-muted-foreground">Your emergency recovery wallet — set this up at PauseSafe.com, then paste the address here.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -131,9 +131,9 @@ export default function SetupWizard({ onComplete }) {
               <Shield className="w-8 h-8 text-green-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Step 1: Enter Your GuardtraSafe Address</h1>
+              <h1 className="text-xl font-bold text-foreground mb-2">Step 1: Enter Your PauseSafe Address</h1>
               <p className="text-muted-foreground text-sm">
-                Go to <a href="https://guardtrasafe.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">guardtrasafe.com</a>, create your Safe wallet, then paste the address below.
+                Go to <a href="https://PauseSafe.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">PauseSafe.com</a>, create your Safe wallet, then paste the address below.
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default function SetupWizard({ onComplete }) {
                 <div className="flex items-start gap-2 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
                   <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-green-400">
-                    <strong>Safe wallet detected!</strong> We found your GuardtraSafe wallet automatically. When you revoke a suspicious transaction, your funds will be routed here instantly.
+                    <strong>Safe wallet detected!</strong> We found your PauseSafe wallet automatically. When you revoke a suspicious transaction, your funds will be routed here instantly.
                   </p>
                 </div>
               ) : (
@@ -156,7 +156,7 @@ export default function SetupWizard({ onComplete }) {
 
               <div>
                 <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1.5">
-                  GuardtraSafe Wallet Address
+                  PauseSafe Wallet Address
                   {autoDetected && <span className="text-green-400 ml-2 normal-case">✓ Auto-detected</span>}
                 </label>
                 {detectingAddress ? (

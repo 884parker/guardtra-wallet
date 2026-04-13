@@ -22,7 +22,7 @@ async function decryptMnemonic(encryptedBase64: string, secret: string): Promise
 
 /**
  * Auto-release held transactions whose lock time has expired.
- * Reads Guard mnemonic from the database (per-user) to send on-chain.
+ * Reads Hold wallet mnemonic from the database (per-user) to send on-chain.
  * Should be called on a schedule (e.g., every 5 minutes via cron).
  */
 serve(async (req) => {

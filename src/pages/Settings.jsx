@@ -112,8 +112,8 @@ export default function Settings() {
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Wallet Setup</h2>
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <div>
-            <label className="text-sm font-medium text-foreground block mb-1">GuardtraSafe Wallet Address</label>
-            <p className="text-xs text-muted-foreground mb-2">Your GuardtraSafe recovery wallet address. Revoked transactions are automatically routed here for safekeeping.</p>
+            <label className="text-sm font-medium text-foreground block mb-1">PauseSafe Wallet Address</label>
+            <p className="text-xs text-muted-foreground mb-2">Your PauseSafe recovery wallet address. Revoked transactions are automatically routed here for safekeeping.</p>
             <div className="flex gap-2">
               <input
                 value={safeWalletAddress}
@@ -189,7 +189,7 @@ export default function Settings() {
           </button>
           {[
             { wallet: 'vault', label: 'Vault Wallet Seed', icon: Shield, color: 'text-vault' },
-            { wallet: 'guard', label: 'Guard Wallet Seed', icon: Lock, color: 'text-guard' },
+            { wallet: 'guard', label: 'Hold Wallet Seed', icon: Lock, color: 'text-guard' },
             { wallet: 'liquidity', label: 'Liquidity Wallet Seed', icon: Eye, color: 'text-liquidity' },
           ].map(item => {
             const Icon = item.icon;
@@ -296,7 +296,7 @@ export default function Settings() {
       <div className="bg-muted/30 border border-border rounded-xl p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Shield className="w-4 h-4 text-primary" />
-          <span className="font-medium text-foreground">Guardtra</span>
+          <span className="font-medium text-foreground">Pause Wallet</span>
         </div>
         <p className="text-xs text-muted-foreground">"A second chance before assets are permanently lost."</p>
         <p className="text-xs text-muted-foreground mt-1">Version 0.1.0 MVP</p>

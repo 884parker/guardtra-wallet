@@ -3,7 +3,7 @@ import { Fuel } from 'lucide-react';
 import TopOffModal from './TopOffModal';
 
 /**
- * Gas Tank — car-style fuel gauge for Guard wallet gas reserve.
+ * Gas Tank — car-style fuel gauge for Hold wallet gas reserve.
  * Shows how much ETH is available for transaction fees.
  */
 export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance = 0, ethPrice = 2450, onTopOff }) {

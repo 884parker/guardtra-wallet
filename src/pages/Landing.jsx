@@ -1,6 +1,6 @@
 /**
  * Landing page component — rendered when user is NOT logged in.
- * Based on the static guardtra-homepage/index.html, converted to React.
+ * Based on the static pausewallet.com/index.html, converted to React.
  */
 export default function Landing({ onLaunch }) {
   return (
@@ -77,7 +77,7 @@ export default function Landing({ onLaunch }) {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#c9a84c' }}>GUARDTRA</span>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: 700, color: '#c9a84c' }}>PAUSE WALLET</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <a href="#how-it-works" style={{ color: '#8888a0', textDecoration: 'none', fontSize: '0.875rem' }}>How It Works</a>
@@ -99,17 +99,17 @@ export default function Landing({ onLaunch }) {
             Hackers Can Steal Your Keys.<br /><span className="gold">They Can't Steal Your Crypto.</span>
           </h1>
           <p style={{ fontSize: '1.2rem', color: '#8888a0', maxWidth: '600px', margin: '0 auto 1rem', lineHeight: 1.7 }}>
-            Guardtra is a new kind of crypto wallet. Every transaction is time-locked. Every suspicious move can be revoked. And if the worst happens, your funds automatically route to <strong style={{ color: '#f0f0f0' }}>GuardtraSafe</strong> — a hardened recovery wallet, completely out of reach.
+            Pause Wallet is a new kind of crypto wallet. Every transaction is time-locked. Every suspicious move can be revoked. And if the worst happens, your funds automatically route to <strong style={{ color: '#f0f0f0' }}>PauseSafe</strong> — a hardened recovery wallet, completely out of reach.
           </p>
           <p style={{ color: '#8888a0', fontSize: '1.05rem', maxWidth: '580px', margin: '0 auto 2rem' }}>
-            Sent to the wrong address? Wrong network? With Guardtra, mistakes aren't permanent anymore. <strong style={{ color: '#f0f0f0' }}>You get a second chance.</strong>
+            Sent to the wrong address? Wrong network? With Pause Wallet, mistakes aren't permanent anymore. <strong style={{ color: '#f0f0f0' }}>You get a second chance.</strong>
           </p>
 
           {/* Flow */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <div className="flow-step" style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>🔐 Vault — Store</div>
             <span style={{ color: '#8888a0', fontSize: '1.2rem' }}>→</span>
-            <div className="flow-step" style={{ background: 'rgba(201,168,76,0.12)', color: '#e4c76b', border: '1px solid rgba(201,168,76,0.25)' }}>⏱️ Guard — Time Lock</div>
+            <div className="flow-step" style={{ background: 'rgba(201,168,76,0.12)', color: '#e4c76b', border: '1px solid rgba(201,168,76,0.25)' }}>⏱️ Hold — Time Lock</div>
             <span style={{ color: '#8888a0', fontSize: '1.2rem' }}>→</span>
             <div className="flow-step" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' }}>🛡️ Safe — Recover</div>
           </div>
@@ -118,7 +118,7 @@ export default function Landing({ onLaunch }) {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={onLaunch} className="landing-btn landing-btn-primary">🚀 Launch Guardtra Wallet</button>
+            <button onClick={onLaunch} className="landing-btn landing-btn-primary">🚀 Launch Pause Wallet</button>
             <a href="#how-it-works" className="landing-btn landing-btn-outline">See How It Works ↓</a>
           </div>
         </div>
@@ -128,15 +128,15 @@ export default function Landing({ onLaunch }) {
       <section id="how-it-works" style={{ position: 'relative', zIndex: 1, padding: '5rem 2rem' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#c9a84c', marginBottom: '0.75rem', display: 'inline-block' }}>Security Architecture</span>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, marginBottom: '1rem' }}>How Guardtra Protects You</h2>
-          <p style={{ color: '#8888a0', fontSize: '1.05rem', maxWidth: '600px', marginBottom: '3rem' }}>Guardtra is one security system with three layers. Every transaction passes through all three — automatically.</p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, marginBottom: '1rem' }}>How Pause Wallet Protects You</h2>
+          <p style={{ color: '#8888a0', fontSize: '1.05rem', maxWidth: '600px', marginBottom: '3rem' }}>Pause Wallet is one security system with three layers. Every transaction passes through all three — automatically.</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             {[
               { num: '1', title: 'Vault — Your Savings Account', desc: 'Think of the Vault like a savings account for your crypto. This is where the bulk of your portfolio lives. When you send crypto out, it enters the Guard first.' },
-              { num: '2', title: 'Guard — Customizable Time Lock', desc: 'Every Vault transaction is held before reaching the recipient. You choose the lock time — 6, 12, or 24 hours. During this window, you can revoke anything you didn\'t authorize.' },
+              { num: '2', title: 'Hold — Customizable Time Lock', desc: 'Every Vault transaction is held before reaching the recipient. You choose the lock time — 6, 12, or 24 hours. During this window, you can revoke anything you didn\'t authorize.' },
               { num: '3', title: 'Liquidity — Your Checking Account', desc: 'Keep smaller amounts here for everyday use, quick trades, and time-sensitive moves. No time lock, no delay. Sends go out instantly.' },
-              { num: '4', title: 'Safe — Emergency Recovery', desc: 'When you revoke a transaction, funds route to GuardtraSafe — a completely separate hardened wallet. No seed phrase access, no external connections, PIN-protected.' },
+              { num: '4', title: 'Safe — Emergency Recovery', desc: 'When you revoke a transaction, funds route to PauseSafe — a completely separate hardened wallet. No seed phrase access, no external connections, PIN-protected.' },
             ].map(s => (
               <div key={s.num} className="step-card">
                 <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem', background: 'rgba(201,168,76,0.15)', color: '#e4c76b' }}>{s.num}</div>
@@ -153,8 +153,8 @@ export default function Landing({ onLaunch }) {
               {[
                 'Attacker gains access to your Vault and initiates a transfer of all your ETH.',
                 'The transaction enters the Guard and is held for your configured lock time. The attacker can\'t speed this up.',
-                'You get an alert. You open Guardtra and see the unauthorized transfer. You hit Revoke.',
-                'The transaction is cancelled. Your funds are instantly routed to your GuardtraSafe wallet.',
+                'You get an alert. You open Pause Wallet and see the unauthorized transfer. You hit Revoke.',
+                'The transaction is cancelled. Your funds are instantly routed to your PauseSafe wallet.',
                 'You secure your accounts, set up a new Vault, and transfer funds back. Zero loss.',
               ].map((text, i) => (
                 <div key={i} className="scenario-step" style={i === 4 ? { borderColor: 'rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.04)' } : {}}>
@@ -170,14 +170,14 @@ export default function Landing({ onLaunch }) {
       {/* Features */}
       <section id="features" style={{ position: 'relative', zIndex: 1, padding: '5rem 2rem' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#c9a84c', marginBottom: '0.75rem', display: 'inline-block' }}>Why Guardtra</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#c9a84c', marginBottom: '0.75rem', display: 'inline-block' }}>Why Pause Wallet</span>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 700, marginBottom: '3rem' }}>Built Different</h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
             {[
               { icon: '⏱️', title: 'Customizable Time Lock', desc: 'Choose 6, 12, or 24 hours. Attackers can\'t move your funds before you notice.' },
               { icon: '🔄', title: 'Instant Revoke', desc: 'See something wrong? One click revokes the transaction and routes funds to Safe.' },
-              { icon: '🔒', title: 'No Seed Exposure', desc: 'GuardtraSafe locks down the seed phrase entirely. No one can accidentally leak it.' },
+              { icon: '🔒', title: 'No Seed Exposure', desc: 'PauseSafe locks down the seed phrase entirely. No one can accidentally leak it.' },
               { icon: '🔄', title: 'Undo Your Mistakes', desc: 'Wrong address? Wrong network? Revoke during the hold window. Mistakes don\'t have to be permanent.' },
               { icon: '⚡', title: 'Liquidity Wallet', desc: 'Your checking account for crypto. No time lock — sends go out instantly.' },
               { icon: '🛡️', title: 'Emergency Mode', desc: 'Detect a breach? Emergency protection migrates all held funds to a new vault instantly.' },
@@ -198,7 +198,7 @@ export default function Landing({ onLaunch }) {
           <div style={{ background: '#12121a', border: '1px solid #222235', borderRadius: 20, padding: '2.5rem', textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', padding: '0.5rem 1.25rem', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600, color: '#c9a84c', marginBottom: '1rem' }}>📋 USPTO Filed</div>
             <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Patent-Pending Technology</h3>
-            <p style={{ color: '#8888a0', fontSize: '0.9rem', maxWidth: 500, margin: '0 auto' }}>Guardtra's three-layer security architecture is protected by provisional patents filed with the United States Patent and Trademark Office.</p>
+            <p style={{ color: '#8888a0', fontSize: '0.9rem', maxWidth: 500, margin: '0 auto' }}>Pause Wallet's three-layer security architecture is protected by provisional patents filed with the United States Patent and Trademark Office.</p>
           </div>
         </div>
       </section>
@@ -209,19 +209,19 @@ export default function Landing({ onLaunch }) {
           Your Keys Got Stolen.<br /><span className="gold">Your Crypto Didn't.</span>
         </h2>
         <p style={{ color: '#8888a0', fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
-          That's the Guardtra difference. Protection from hackers AND your own mistakes.
+          That's the Pause Wallet difference. Protection from hackers AND your own mistakes.
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={onLaunch} className="landing-btn landing-btn-primary">🚀 Launch Guardtra Wallet</button>
-          <button onClick={onLaunch} className="landing-btn landing-btn-green">🛡️ Set Up GuardtraSafe</button>
+          <button onClick={onLaunch} className="landing-btn landing-btn-primary">🚀 Launch Pause Wallet</button>
+          <button onClick={onLaunch} className="landing-btn landing-btn-green">🛡️ Set Up PauseSafe</button>
         </div>
       </section>
 
       {/* Footer */}
       <footer style={{ position: 'relative', zIndex: 1, borderTop: '1px solid #222235', padding: '3rem 2rem' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#c9a84c', fontSize: '1rem' }}>GUARDTRA</span>
-          <p style={{ color: '#8888a0', fontSize: '0.8rem' }}>© 2026 Guardtra. All rights reserved. Patent pending.</p>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#c9a84c', fontSize: '1rem' }}>PAUSE WALLET</span>
+          <p style={{ color: '#8888a0', fontSize: '0.8rem' }}>© 2026 Pause Wallet. All rights reserved. Patent pending.</p>
         </div>
       </footer>
     </div>

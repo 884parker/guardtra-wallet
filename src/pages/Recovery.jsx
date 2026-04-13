@@ -143,7 +143,7 @@ export default function Recovery() {
         <div className="bg-muted/30 border border-border rounded-xl p-4">
           <h3 className="text-sm font-medium mb-2 text-foreground">How Recovery Addresses Work</h3>
           <ul className="space-y-1.5 text-xs text-muted-foreground">
-            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>When you revoke a Guard transaction, funds are rerouted to your primary recovery address</li>
+            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>When you revoke a Hold transaction, funds are rerouted to your primary recovery address</li>
             <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>During an emergency, all held assets migrate to the primary address</li>
             <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>Use a hardware wallet, multisig, or air-gapped address for maximum security</li>
             <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>Star an address to make it primary</li>

@@ -94,7 +94,7 @@ export default function Guard() {
               <Activity className={`w-5 h-5 ${hasUnauthorized ? 'text-destructive' : 'text-guard'}`} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Guard Wallet</h1>
+              <h1 className="text-lg font-bold text-foreground">Hold Wallet</h1>
               <div className="flex items-center gap-1.5">
                 <p className="text-xs text-muted-foreground font-mono">{walletAddress ? `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}` : '—'}</p>
                 {walletAddress && (
@@ -185,7 +185,7 @@ export default function Guard() {
         {allTxs.length === 0 ? (
           <div className="bg-card border border-border rounded-2xl p-8 text-center">
             <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No transactions held in Guard right now.</p>
+            <p className="text-sm text-muted-foreground">No transactions held in Hold right now.</p>
             <p className="text-xs text-muted-foreground mt-1">Vault transfers will appear here with a 24h security timer.</p>
           </div>
         ) : (
@@ -205,7 +205,7 @@ export default function Guard() {
 
       {/* How it works */}
       <div className="bg-muted/30 border border-border rounded-xl p-4">
-        <h3 className="text-sm font-medium mb-2 text-foreground">How Guard Protection Works</h3>
+        <h3 className="text-sm font-medium mb-2 text-foreground">How Hold Protection Works</h3>
         <ul className="space-y-1.5 text-xs text-muted-foreground">
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>All Vault transfers are held here for {lockHours} hours before release</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>You can revoke any transaction during the hold period</li>

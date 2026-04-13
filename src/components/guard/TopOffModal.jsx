@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 
 const FULL_TANK = 0.05; // ETH — enough for ~15+ transactions
 
-// Fetch guard wallet address
+// Fetch Hold wallet address
 function useGuardAddress() {
   const [addr, setAddr] = useState('');
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function TopOffModal({ currentGas, vaultBalance, ethPrice, onClos
     setError('');
 
     try {
-      if (!guardAddress) throw new Error('Guard wallet address not found');
+      if (!guardAddress) throw new Error('Hold wallet address not found');
 
       // Send from Vault directly to Guard — gas top-off, no held transaction record
       const res = await base44.functions.invoke('sendTransaction', {
@@ -96,7 +96,7 @@ export default function TopOffModal({ currentGas, vaultBalance, ethPrice, onClos
               <p className="text-sm text-foreground font-medium mb-1">⛽ Think of it like your car</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Every transaction needs gas to run on the blockchain. Some people keep a full tank, 
-                some put in what they need. Top off your Guard wallet so transactions never stall.
+                some put in what they need. Top off your Hold wallet so transactions never stall.
               </p>
             </div>
 
@@ -199,7 +199,7 @@ export default function TopOffModal({ currentGas, vaultBalance, ethPrice, onClos
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">To</span>
-                <span className="text-guard font-medium">Guard Gas Tank</span>
+                <span className="text-guard font-medium">Hold Gas Tank</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Amount</span>
@@ -219,7 +219,7 @@ export default function TopOffModal({ currentGas, vaultBalance, ethPrice, onClos
 
             <div className="flex items-start gap-2 bg-guard/10 border border-guard/30 rounded-xl p-3 mb-4">
               <Fuel className="w-4 h-4 text-guard mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-guard">Gas top-offs transfer directly to Guard — no time lock, no hold. Funds are immediately available for transaction fees.</p>
+              <p className="text-xs text-guard">Gas top-offs transfer directly to Hold — no time lock, no hold. Funds are immediately available for transaction fees.</p>
             </div>
 
             <div className="flex gap-2">
@@ -237,7 +237,7 @@ export default function TopOffModal({ currentGas, vaultBalance, ethPrice, onClos
           <div className="text-center py-10">
             <Loader2 className="w-10 h-10 animate-spin text-guard mx-auto mb-4" />
             <p className="text-sm font-medium text-foreground">Filling up the tank...</p>
-            <p className="text-xs text-muted-foreground mt-1">Transferring from Vault to Guard. ~15 seconds.</p>
+            <p className="text-xs text-muted-foreground mt-1">Transferring from Vault to Hold. ~15 seconds.</p>
           </div>
         )}
 

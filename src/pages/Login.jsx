@@ -32,7 +32,7 @@ export default function Login({ onBack }) {
           <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
             <Shield className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Guardtra Wallet</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Pause Wallet</h1>
           <p className="text-sm text-muted-foreground">Sign in to your wallet</p>
         </div>
 
@@ -118,12 +118,12 @@ export default function Login({ onBack }) {
         <div className="bg-card border border-border rounded-xl p-4 text-center space-y-2">
           <p className="text-sm text-muted-foreground">Don't have an account yet?</p>
           <a
-            href="https://guardtrasafe.com"
+            href="https://app.pausewallet.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline font-medium text-sm"
           >
-            Sign up at GuardtraSafe first →
+            Sign up at PauseSafe first →
           </a>
           <p className="text-xs text-muted-foreground">Create your recovery wallet, then come back here to sign in.</p>
         </div>

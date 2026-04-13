@@ -29,7 +29,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
     try {
       let hash = '';
 
-      // Send from Guard wallet (server-side) to Safe Wallet
+      // Send from Hold wallet (server-side) to Safe Wallet
       if (transaction.asset === 'ETH' && hermitageAddress) {
         const res = await base44.functions.invoke('sendTransaction', {
           walletType: 'guard',
@@ -54,7 +54,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
           from_wallet: 'guard',
           to_address: hermitageAddress,
           network: transaction.network,
-          destination_label: 'Safe Wallet (Revoke)',
+          destination_label: 'PauseSafe (Revoke)',
           status: 'completed',
           is_user_initiated: true,
           usd_value: transaction.usd_value,
@@ -90,7 +90,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
               <div className="flex items-start gap-2 bg-accent/10 border border-accent/30 rounded-xl p-3 mb-4">
                 <ShieldCheck className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                 <div className="text-xs text-accent">
-                  <p className="font-medium mb-1">Funds routed to Safe Wallet</p>
+                  <p className="font-medium mb-1">Funds routed to PauseSafe</p>
                   <div className="flex items-center gap-1 flex-wrap">
                     <span className="text-muted-foreground">Original dest blocked</span>
                     <ArrowRight className="w-3 h-3" />
@@ -101,11 +101,11 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
             ) : (
               <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl p-3 mb-4">
                 <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-destructive">No Safe Wallet set. Go to Settings → Wallet Setup to configure it first.</p>
+                <p className="text-xs text-destructive">No PauseSafe address set. Go to Settings → Wallet Setup to configure it first.</p>
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground bg-muted rounded-xl p-3 mb-4">Funds will be sent from Guard wallet to your Safe Wallet via the secure backend.</p>
+            <p className="text-xs text-muted-foreground bg-muted rounded-xl p-3 mb-4">Funds will be sent from Hold wallet to your PauseSafe via the secure backend.</p>
 
             {error && <p className="text-xs text-destructive mb-3">{error}</p>}
 
@@ -121,7 +121,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
         {step === 'sending' && (
           <div className="text-center py-6">
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
-            <p className="text-sm text-foreground font-medium">Sending from Guard to Safe Wallet...</p>
+            <p className="text-sm text-foreground font-medium">Sending from Hold to PauseSafe...</p>
             <p className="text-xs text-muted-foreground mt-1">Broadcasting on-chain via secure backend</p>
           </div>
         )}
@@ -133,7 +133,7 @@ export default function RevokeConfirmModal({ transaction, onClose, onRevoked }) 
             </div>
             <h3 className="font-semibold mb-1">Transaction Revoked</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              {txHash ? 'Funds sent to your Safe Wallet on-chain.' : 'Transaction marked as revoked.'}
+              {txHash ? 'Funds sent to your PauseSafe on-chain.' : 'Transaction marked as revoked.'}
             </p>
             {txHash && (
               <a

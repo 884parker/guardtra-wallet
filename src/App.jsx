@@ -9,7 +9,7 @@ import Login from '@/pages/Login';
 import SetupWizard from '@/pages/SetupWizard';
 import Dashboard from '@/pages/Dashboard';
 import Vault from '@/pages/Vault';
-import Guard from '@/pages/Guard';
+import Hold from '@/pages/Guard';
 import Liquidity from '@/pages/Liquidity';
 import Recovery from '@/pages/Recovery';
 import Settings from '@/pages/Settings';
@@ -56,7 +56,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Navigate to="/Dashboard" replace />} />
         <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/Vault" element={<Vault />} />
-        <Route path="/Guard" element={<Guard />} />
+        <Route path="/Hold" element={<Hold />} />
         <Route path="/Liquidity" element={<Liquidity />} />
         <Route path="/Recovery" element={<Recovery />} />
         <Route path="/Settings" element={<Settings />} />

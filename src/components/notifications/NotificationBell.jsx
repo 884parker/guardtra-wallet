@@ -48,7 +48,7 @@ export default function NotificationBell({ guardThresholdETH = 5 }) {
       // Desktop notifications for new critical alerts
       const newCritical = newAlerts.filter(a => a.severity === 'critical' && !dismissed.has(a.id));
       if (newCritical.length > prevCriticalCount.current) {
-        newCritical.slice(prevCriticalCount.current).forEach(a => send('🚨 CryptoGuard Alert', a.message, a.severity));
+        newCritical.slice(prevCriticalCount.current).forEach(a => send('🚨 Pause Wallet Alert', a.message, a.severity));
       }
       prevCriticalCount.current = newCritical.length;
 
@@ -135,15 +135,15 @@ export default function NotificationBell({ guardThresholdETH = 5 }) {
                           {alert.severity === 'critical' ? '🚨 ' : '⚠️ '}
                           {alert.type === 'unauthorized_transaction' ? 'Unauthorized Transaction' :
                            alert.type === 'high_value_transaction'   ? 'High-Value Transfer' :
-                           alert.type === 'guard_threshold_exceeded'  ? 'Guard Threshold Exceeded' : 'Alert'}
+                           alert.type === 'guard_threshold_exceeded'  ? 'Hold Threshold Exceeded' : 'Alert'}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{alert.message}</p>
                         {alert.transaction_id && (
                           <button
-                            onClick={() => { navigate('/Guard'); setOpen(false); }}
+                            onClick={() => { navigate('/Hold'); setOpen(false); }}
                             className="flex items-center gap-1 text-xs text-primary mt-1 hover:underline"
                           >
-                            <ExternalLink className="w-3 h-3" /> Review in Guard
+                            <ExternalLink className="w-3 h-3" /> Review in Hold
                           </button>
                         )}
                         <p className="text-xs text-muted-foreground/60 mt-1">

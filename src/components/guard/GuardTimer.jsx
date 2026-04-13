@@ -145,7 +145,7 @@ export default function GuardTimer({ transaction, onRevoke, onStartRecovery, onA
           </div>
 
           {isExpired ? (
-            <p className="text-xs text-guard mt-2">⏱ Hold expired — auto-releasing shortly...</p>
+            <p className="text-xs text-guard mt-2">⏱ Time lock expired — auto-releasing shortly...</p>
           ) : (
             <p className="text-xs text-muted-foreground mt-2">Auto-releases after {lockHours}h if not revoked.</p>
           )}

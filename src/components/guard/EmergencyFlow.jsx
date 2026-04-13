@@ -3,7 +3,7 @@ import { AlertTriangle, Shield, RefreshCw, CheckCircle, ChevronRight, Lock, Copy
 import { base44 } from '@/api/base44Client';
 
 const STEPS = [
-  { id: 1, key: 'freeze',   icon: Lock,          title: 'Scan Held Transactions',  desc: 'Identify all pending Guard releases to be revoked.' },
+  { id: 1, key: 'freeze',   icon: Lock,          title: 'Scan Held Transactions',  desc: 'Identify all pending Hold releases to be revoked.' },
   { id: 2, key: 'revoke',   icon: AlertTriangle,  title: 'Revoke All Transactions', desc: 'Cancel every pending/held release from the compromised vault.' },
   { id: 3, key: 'generate', icon: RefreshCw,      title: 'Generate New Vault',      desc: 'Create a fresh Vault wallet with a new seed phrase.' },
   { id: 4, key: 'migrate',  icon: Shield,         title: 'Migrate Remaining Assets',desc: 'Record transfer of all vault assets to the new wallet.' },

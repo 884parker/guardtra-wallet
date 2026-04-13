@@ -24,7 +24,7 @@ async function decryptMnemonic(encryptedBase64: string, secret: string): Promise
 }
 
 /**
- * Send ETH from a managed wallet (vault, guard, liquidity).
+ * Send ETH from a managed wallet (vault, hold/guard, liquidity).
  * Resolves mnemonic from the database (encrypted by generate-wallets),
  * falls back to environment secrets for backward compatibility.
  */
