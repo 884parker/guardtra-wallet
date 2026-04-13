@@ -20,6 +20,8 @@ export default function Guard() {
   const [balanceEth, setBalanceEth] = useState(null);
   const [ethPrice, setEthPrice] = useState(2450);
   const [loadingBalance, setLoadingBalance] = useState(true);
+  const [vaultBalance, setVaultBalance] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { lockHours } = useLockHours();
 
   useEffect(() => {
@@ -27,6 +29,13 @@ export default function Guard() {
     // Fetch primary recovery address from local DB
     base44.entities.RecoveryAddress.filter({ is_primary: true }).then(addrs => {
       if (addrs[0]?.address) setRecoveryAddress(addrs[0].address);
+    }).catch(() => {});
+    // Fetch vault balance for gas top-off
+    base44.entities.WalletProfile.filter({ wallet_type: 'vault' }).then(async profiles => {
+      const addr = profiles[0]?.address;
+      if (!addr) return;
+      const res = await base44.functions.invoke('getWalletBalance', { address: addr }).catch(() => null);
+      setVaultBalance(res?.data?.balance_eth ?? 0);
     }).catch(() => {});
     base44.entities.WalletProfile.filter({ wallet_type: 'guard' }).then(async profiles => {
       const address = profiles[0]?.address;
@@ -41,7 +50,7 @@ export default function Guard() {
       setBalanceEth(res?.data?.balance_eth ?? 0);
       setLoadingBalance(false);
     }).catch(() => setLoadingBalance(false));
-  }, []);
+  }, [refreshKey]);
 
   // Deduplicate: DB records take precedence; exclude any local tx whose ID already exists in DB
   const dbIds = new Set(dbTxs.map(t => t.id));
@@ -58,6 +67,8 @@ export default function Guard() {
     setTransactions(prev => prev.filter(t => t.id !== revokeTarget.id));
     setDbTxs(prev => prev.filter(t => t.id !== revokeTarget.id));
     setRevokeTarget(null);
+    // Refetch everything to ensure consistency with DB
+    setRefreshKey(k => k + 1);
   };
 
   const handleApprove = async (id) => {
@@ -147,7 +158,13 @@ export default function Guard() {
       </div>
 
       {/* Gas Tank */}
-      <GasTank balanceEth={balanceEth ?? 0} heldAmount={heldTotal} />
+      <GasTank
+        balanceEth={balanceEth ?? 0}
+        heldAmount={heldTotal}
+        vaultBalance={vaultBalance}
+        ethPrice={ethPrice}
+        onTopOff={() => setRefreshKey(k => k + 1)}
+      />
 
       {/* Emergency button */}
       {hasUnauthorized && (

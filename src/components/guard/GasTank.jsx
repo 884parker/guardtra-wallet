@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Fuel } from 'lucide-react';
+import TopOffModal from './TopOffModal';
 
 /**
  * Gas Tank — car-style fuel gauge for Guard wallet gas reserve.
  * Shows how much ETH is available for transaction fees.
  */
-export default function GasTank({ balanceEth = 0, heldAmount = 0 }) {
+export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance = 0, ethPrice = 2450, onTopOff }) {
+  const [showTopOff, setShowTopOff] = useState(false);
   // Gas reserve = balance minus what's held for transactions
   const gasReserve = Math.max(0, balanceEth - heldAmount);
   
@@ -89,6 +91,32 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0 }) {
           )}
         </div>
       </div>
+
+      {/* Top Off button */}
+      <button
+        onClick={() => setShowTopOff(true)}
+        className={`w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          fillPercent < 50
+            ? 'bg-guard/20 text-guard border border-guard/30 hover:bg-guard/30'
+            : 'bg-muted/50 text-muted-foreground border border-border hover:bg-muted hover:text-foreground'
+        }`}
+      >
+        <Fuel className="w-3.5 h-3.5" />
+        {fillPercent < 25 ? 'Fill Up — Tank Empty' : fillPercent < 50 ? 'Top Off Gas Tank' : 'Add Gas'}
+      </button>
+
+      {showTopOff && (
+        <TopOffModal
+          currentGas={gasReserve}
+          vaultBalance={vaultBalance}
+          ethPrice={ethPrice}
+          onClose={() => setShowTopOff(false)}
+          onComplete={() => {
+            setShowTopOff(false);
+            onTopOff?.();
+          }}
+        />
+      )}
     </div>
   );
 }

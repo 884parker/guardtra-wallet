@@ -59,7 +59,7 @@ export default function Recovery() {
           <div className="w-14 h-14 rounded-2xl bg-recovery/10 flex items-center justify-center mx-auto mb-4">
             <ShieldCheck className="w-7 h-7 text-recovery" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight mb-1">Recovery Vault</h1>
+          <h1 className="text-2xl font-semibold tracking-tight mb-1">Recovery</h1>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             These addresses receive your funds during a revoke or emergency. The primary address is used automatically.
           </p>
