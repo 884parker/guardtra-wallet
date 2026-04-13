@@ -106,9 +106,35 @@ serve(async (req) => {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const wallet = ethers.Wallet.fromPhrase(mnemonic).connect(provider);
 
+    // Calculate send value, adjusting for gas if sending full balance
+    const sendValue = ethers.parseEther(amountEth.toString());
+    const balance = await provider.getBalance(wallet.address);
+
+    let finalValue = sendValue;
+
+    // If user is trying to send their full balance (or more than balance minus buffer),
+    // estimate gas and deduct it so the transaction doesn't fail
+    if (sendValue >= balance) {
+      // Estimate gas for a simple ETH transfer
+      const feeData = await provider.getFeeData();
+      const gasLimit = BigInt(21000); // standard ETH transfer
+      const maxFeePerGas = feeData.maxFeePerGas || feeData.gasPrice || ethers.parseUnits('50', 'gwei');
+      const estimatedGasCost = gasLimit * maxFeePerGas;
+      // Add 20% buffer for gas price fluctuation
+      const gasCostWithBuffer = estimatedGasCost + (estimatedGasCost * BigInt(20)) / BigInt(100);
+
+      if (balance <= gasCostWithBuffer) {
+        return new Response(JSON.stringify({ 
+          error: `Insufficient balance for gas. Balance: ${ethers.formatEther(balance)} ETH, estimated gas: ${ethers.formatEther(gasCostWithBuffer)} ETH` 
+        }), { status: 400, headers: corsHeaders });
+      }
+
+      finalValue = balance - gasCostWithBuffer;
+    }
+
     const tx = await wallet.sendTransaction({
       to: toAddress,
-      value: ethers.parseEther(amountEth.toString()),
+      value: finalValue,
     });
 
     const receipt = await tx.wait(1);

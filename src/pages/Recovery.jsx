@@ -51,7 +51,7 @@ export default function Recovery() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="md:ml-56 p-6">
       <div className="max-w-2xl mx-auto space-y-8">
 
         {/* Header */}
