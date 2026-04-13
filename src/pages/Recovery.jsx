@@ -56,8 +56,8 @@ export default function Recovery() {
 
         {/* Header */}
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck className="w-7 h-7 text-accent" />
+          <div className="w-14 h-14 rounded-2xl bg-recovery/10 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-7 h-7 text-recovery" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Recovery Vault</h1>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
@@ -78,14 +78,14 @@ export default function Recovery() {
               <div
                 key={addr.id}
                 className={`bg-card border rounded-xl p-4 flex items-start gap-3 transition-all ${
-                  addr.is_primary ? 'border-accent/40' : 'border-border'
+                  addr.is_primary ? 'border-recovery/40' : 'border-border'
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-foreground">{addr.label}</span>
                     {addr.is_primary && (
-                      <span className="text-xs bg-accent/10 text-accent border border-accent/30 px-2 py-0.5 rounded-full">Primary</span>
+                      <span className="text-xs bg-recovery/10 text-recovery border border-recovery/30 px-2 py-0.5 rounded-full">Primary</span>
                     )}
                   </div>
                   <p className="text-xs font-mono text-muted-foreground break-all">{addr.address}</p>
@@ -95,7 +95,7 @@ export default function Recovery() {
                     <button
                       onClick={() => handleSetPrimary(addr.id)}
                       title="Set as primary"
-                      className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-accent transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-recovery transition-colors"
                     >
                       <Star className="w-4 h-4" />
                     </button>
@@ -120,19 +120,19 @@ export default function Recovery() {
             value={newLabel}
             onChange={e => setNewLabel(e.target.value)}
             placeholder="Label (e.g. Cold Storage, Safe Multisig)"
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-recovery"
           />
           <input
             type="text"
             value={newAddress}
             onChange={e => setNewAddress(e.target.value)}
             placeholder="0x..."
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-recovery"
           />
           <button
             onClick={handleAdd}
             disabled={!newAddress.trim()}
-            className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground rounded-lg py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+            className="w-full flex items-center justify-center gap-2 bg-recovery text-recovery-foreground rounded-lg py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
           >
             <Plus className="w-4 h-4" />
             Add Address
@@ -143,10 +143,10 @@ export default function Recovery() {
         <div className="bg-muted/30 border border-border rounded-xl p-4">
           <h3 className="text-sm font-medium mb-2 text-foreground">How Recovery Addresses Work</h3>
           <ul className="space-y-1.5 text-xs text-muted-foreground">
-            <li className="flex items-start gap-2"><span className="text-accent mt-0.5">•</span>When you revoke a Guard transaction, funds are rerouted to your primary recovery address</li>
-            <li className="flex items-start gap-2"><span className="text-accent mt-0.5">•</span>During an emergency, all held assets migrate to the primary address</li>
-            <li className="flex items-start gap-2"><span className="text-accent mt-0.5">•</span>Use a hardware wallet, multisig, or air-gapped address for maximum security</li>
-            <li className="flex items-start gap-2"><span className="text-accent mt-0.5">•</span>Star an address to make it primary</li>
+            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>When you revoke a Guard transaction, funds are rerouted to your primary recovery address</li>
+            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>During an emergency, all held assets migrate to the primary address</li>
+            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>Use a hardware wallet, multisig, or air-gapped address for maximum security</li>
+            <li className="flex items-start gap-2"><span className="text-recovery mt-0.5">•</span>Star an address to make it primary</li>
           </ul>
         </div>
 

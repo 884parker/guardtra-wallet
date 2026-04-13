@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Activity, AlertTriangle, ShieldAlert, Copy } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import GuardTimer from '@/components/guard/GuardTimer';
+import GasTank from '@/components/guard/GasTank';
 import EmergencyFlow from '@/components/guard/EmergencyFlow';
 import RevokeConfirmModal from '@/components/guard/RevokeConfirmModal';
 import OnChainFeed from '@/components/dashboard/OnChainFeed';
@@ -58,6 +59,19 @@ export default function Guard() {
     setDbTxs(prev => prev.filter(t => t.id !== revokeTarget.id));
     setRevokeTarget(null);
   };
+
+  const handleApprove = async (id) => {
+    try {
+      await base44.entities.Transaction.update(id, { approved: true });
+      setDbTxs(prev => prev.map(t => t.id === id ? { ...t, approved: true } : t));
+      setTransactions(prev => prev.map(t => t.id === id ? { ...t, approved: true } : t));
+    } catch (err) {
+      console.error('Failed to approve transaction:', err);
+    }
+  };
+
+  // Calculate total held amount for gas tank
+  const heldTotal = allTxs.reduce((sum, tx) => sum + (tx.asset === 'ETH' ? (tx.amount || 0) : 0), 0);
 
   return (
     <div className="md:ml-56 space-y-5">
@@ -132,6 +146,9 @@ export default function Guard() {
 
       </div>
 
+      {/* Gas Tank */}
+      <GasTank balanceEth={balanceEth ?? 0} heldAmount={heldTotal} />
+
       {/* Emergency button */}
       {hasUnauthorized && (
         <button
@@ -161,6 +178,7 @@ export default function Guard() {
                 key={tx.id}
                 transaction={tx}
                 onRevoke={handleRevokeClick}
+                onApprove={handleApprove}
                 onStartRecovery={!tx.is_user_initiated ? () => setShowEmergency(true) : undefined}
               />
             ))}

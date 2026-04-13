@@ -47,6 +47,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--liquidity))',
           foreground: 'hsl(var(--liquidity-foreground))'
         },
+        recovery: {
+          DEFAULT: 'hsl(var(--recovery))',
+          foreground: 'hsl(var(--recovery-foreground))'
+        },
         border: 'hsl(var(--border))',
         ring: 'hsl(var(--ring))',
       },
