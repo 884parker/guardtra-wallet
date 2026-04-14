@@ -206,7 +206,12 @@ export const functions = {
       body,
     });
     if (error) throw error;
-    return { data };
+    // Edge functions may return JSON as a string — parse it
+    let parsed = data;
+    if (typeof data === 'string') {
+      try { parsed = JSON.parse(data); } catch (e) { /* keep as string */ }
+    }
+    return { data: parsed };
   },
 };
 

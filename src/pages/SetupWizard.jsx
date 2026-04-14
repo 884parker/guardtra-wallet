@@ -97,7 +97,8 @@ export default function SetupWizard({ onComplete }) {
   // ─── Create Safe Wallet ───
   const handleCreateSafe = async () => {
     if (safePin !== safeConfirmPin) {
-      setSafePinError('PINs do not match');
+      setSafePinError('PINs do not match. Please start over.');
+      setSafePin('');
       setSafeConfirmPin('');
       setStep('safe-pin');
       return;
@@ -107,14 +108,25 @@ export default function SetupWizard({ onComplete }) {
     try {
       const res = await functions.invoke('wallet', { action: 'create_wallet', pin: safePin });
       if (res?.data?.error) throw new Error(res.data.error);
-      setSafeAddress(res?.data?.address || '');
-      // Fetch the seed phrase immediately so user can back it up
-      const seedRes = await functions.invoke('wallet', { action: 'get_seed_phrase', pin: safePin });
-      setSafeSeedPhrase(seedRes?.data?.seed_phrase || seedRes?.data?.seedPhrase || '');
+      const createdAddress = res?.data?.address || '';
+      console.log('[SetupWizard] Safe wallet created, address:', createdAddress);
+      setSafeAddress(createdAddress);
+      // Fetch the seed phrase — the wallet edge function uses action 'get_seed_phrase'
+      // which decrypts the mnemonic with the PIN
+      try {
+        const seedRes = await functions.invoke('wallet', { action: 'get_seed_phrase', pin: safePin });
+        setSafeSeedPhrase(seedRes?.data?.seed_phrase || seedRes?.data?.seedPhrase || seedRes?.data?.mnemonic || '');
+      } catch (seedErr) {
+        // If seed phrase fetch fails, still proceed — user can access it later in PauseSafe Settings
+        console.warn('Could not fetch seed phrase:', seedErr);
+        setSafeSeedPhrase('');
+      }
       setStep('safe-backup');
     } catch (err) {
       console.error('Safe wallet creation failed:', err);
       setError(err.message || 'Failed to create Safe wallet. Please try again.');
+      setSafePin('');
+      setSafeConfirmPin('');
       setStep('safe-pin');
     }
   };
@@ -125,7 +137,23 @@ export default function SetupWizard({ onComplete }) {
     setError('');
     setStep('generating');
 
-    const addr = existingSafe || safeAddress;
+    // Use whatever Safe address we have — from creation or from DB
+    let addr = existingSafe || safeAddress;
+
+    // Fallback: if we still don't have the address, query the DB
+    if (!addr) {
+      try {
+        const wallets = await base44.entities.UserWallet.list('-created_at', 1);
+        if (wallets && wallets.length > 0 && wallets[0].address) {
+          addr = wallets[0].address;
+          setSafeAddress(addr);
+        }
+      } catch (e) {
+        console.warn('[SetupWizard] Could not fetch Safe address from DB:', e);
+      }
+    }
+
+    console.log('[SetupWizard] Generating main wallets, Safe address:', addr);
 
     try {
       // Save the Safe wallet address for the main wallet
@@ -379,7 +407,7 @@ export default function SetupWizard({ onComplete }) {
             <Numpad field="confirm" />
 
             <div className="flex gap-3 w-full">
-              <button onClick={() => { setStep('safe-pin'); setSafeConfirmPin(''); setSafePinError(''); }} className="flex-1 border border-border text-muted-foreground rounded-xl py-3 text-sm hover:bg-secondary">Back</button>
+              <button onClick={() => { setStep('safe-pin'); setSafePin(''); setSafeConfirmPin(''); setSafePinError(''); }} className="flex-1 border border-border text-muted-foreground rounded-xl py-3 text-sm hover:bg-secondary">Back</button>
               <button
                 onClick={handleCreateSafe}
                 disabled={safeConfirmPin.length !== 6}
@@ -458,22 +486,38 @@ export default function SetupWizard({ onComplete }) {
                   <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-400">
                     <strong>Write this down!</strong> Your PauseSafe seed phrase is your last line of defense.
-                    You can also view it later in PauseSafe Settings.
+                    You can also view it later in PauseSafe Settings at safe.pausewallet.com.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* If seed phrase couldn't be fetched */}
+            {!safeSeedPhrase && (
+              <div className="bg-card border border-border rounded-xl p-4 w-full">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    <strong className="text-foreground">Your PauseSafe seed phrase</strong> can be viewed in PauseSafe Settings.
+                    Go to <a href="https://safe.pausewallet.com" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline font-medium">safe.pausewallet.com</a>,
+                    sign in with the same account, unlock with your PIN, and go to Settings to view it.
                   </p>
                 </div>
               </div>
             )}
 
             {/* Confirmation */}
-            <label className="flex items-start gap-3 bg-card border border-border rounded-xl p-4 w-full cursor-pointer">
-              <input
-                type="checkbox"
-                checked={safeBackedUp}
-                onChange={e => setSafeBackedUp(e.target.checked)}
-                className="mt-0.5 accent-emerald-500"
-              />
-              <span className="text-sm text-foreground">I have saved my PauseSafe seed phrase in a secure location.</span>
-            </label>
+            {safeSeedPhrase ? (
+              <label className="flex items-start gap-3 bg-card border border-border rounded-xl p-4 w-full cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={safeBackedUp}
+                  onChange={e => setSafeBackedUp(e.target.checked)}
+                  className="mt-0.5 accent-emerald-500"
+                />
+                <span className="text-sm text-foreground">I have saved my PauseSafe seed phrase in a secure location.</span>
+              </label>
+            ) : null}
 
             {error && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive w-full">
@@ -483,7 +527,7 @@ export default function SetupWizard({ onComplete }) {
 
             <button
               onClick={handleGenerateWallets}
-              disabled={!safeBackedUp || loading}
+              disabled={(safeSeedPhrase && !safeBackedUp) || loading}
               className="w-full bg-primary text-primary-foreground rounded-xl py-3.5 font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
