@@ -78,7 +78,10 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
           <div className="text-lg font-bold text-foreground font-mono">
             {gasReserve.toFixed(4)} <span className="text-sm text-muted-foreground font-normal">ETH</span>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground font-mono">
+            ≈ ${(gasReserve * ethPrice).toFixed(2)} USD
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
             {gasReserve > 0.002 
               ? `~${Math.floor(gasReserve / 0.003)} transactions worth of gas`
               : 'Top up to process pending transactions'
@@ -95,7 +98,7 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
       {/* Top Off button */}
       <button
         onClick={() => setShowTopOff(true)}
-        className={`w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
+        className={`max-w-[280px] mt-3 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-sm font-medium transition-all ${
           fillPercent < 50
             ? 'bg-guard/20 text-guard border border-guard/30 hover:bg-guard/30'
             : 'bg-muted/50 text-muted-foreground border border-border hover:bg-muted hover:text-foreground'

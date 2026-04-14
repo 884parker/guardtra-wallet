@@ -216,7 +216,7 @@ export default function Settings() {
         <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
           {[
             { key: 'vaultAlert', label: 'Vault transaction alerts', desc: 'Instant alert when Vault sends' },
-            { key: 'guardRelease', label: 'Guard release reminders', desc: 'Notify before 24h release' },
+            { key: 'guardRelease', label: 'Hold release reminders', desc: 'Notify before 24h release' },
             { key: 'email', label: 'Email notifications', desc: 'Backup alert via email' },
           ].map(item => (
             <div key={item.key} className="flex items-center justify-between px-4 py-3.5">

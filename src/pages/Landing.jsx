@@ -133,7 +133,7 @@ export default function Landing({ onLaunch }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             {[
-              { num: '1', title: 'Vault — Your Savings Account', desc: 'Think of the Vault like a savings account for your crypto. This is where the bulk of your portfolio lives. When you send crypto out, it enters the Guard first.' },
+              { num: '1', title: 'Vault — Your Savings Account', desc: 'Think of the Vault like a savings account for your crypto. This is where the bulk of your portfolio lives. When you send crypto out, it enters the Hold first.' },
               { num: '2', title: 'Hold — Customizable Time Lock', desc: 'Every Vault transaction is held before reaching the recipient. You choose the lock time — 6, 12, or 24 hours. During this window, you can revoke anything you didn\'t authorize.' },
               { num: '3', title: 'Liquidity — Your Checking Account', desc: 'Keep smaller amounts here for everyday use, quick trades, and time-sensitive moves. No time lock, no delay. Sends go out instantly.' },
               { num: '4', title: 'Safe — Emergency Recovery', desc: 'When you revoke a transaction, funds route to PauseSafe — a completely separate hardened wallet. No seed phrase access, no external connections, PIN-protected.' },
@@ -152,7 +152,7 @@ export default function Landing({ onLaunch }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
                 'Attacker gains access to your Vault and initiates a transfer of all your ETH.',
-                'The transaction enters the Guard and is held for your configured lock time. The attacker can\'t speed this up.',
+                'The transaction enters the Hold and is held for your configured lock time. The attacker can\'t speed this up.',
                 'You get an alert. You open Pause Wallet and see the unauthorized transfer. You hit Revoke.',
                 'The transaction is cancelled. Your funds are instantly routed to your PauseSafe wallet.',
                 'You secure your accounts, set up a new Vault, and transfer funds back. Zero loss.',

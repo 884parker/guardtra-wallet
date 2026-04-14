@@ -127,7 +127,7 @@ export default function Analytics() {
   // Wallet allocation pie
   const walletPie = [
     { name: 'Vault', value: Math.round(vaultUSD) },
-    { name: 'Guard', value: Math.round(guardUSD) },
+    { name: 'Hold', value: Math.round(guardUSD) },
     { name: 'Liquidity', value: Math.round(liquidityUSD) },
   ].filter(d => d.value > 0).map((d, _, arr) => {
     const tot = arr.reduce((s, x) => s + x.value, 0);
@@ -144,7 +144,7 @@ export default function Analytics() {
           <div className="mt-4 grid grid-cols-3 gap-3">
             {[
               { label: 'Vault', usd: vaultUSD, color: 'text-vault' },
-              { label: 'Guard', usd: guardUSD, color: 'text-guard' },
+              { label: 'Hold', usd: guardUSD, color: 'text-guard' },
               { label: 'Liquidity', usd: liquidityUSD, color: 'text-liquidity' },
             ].map(w => (
               <div key={w.label} className="bg-muted/40 rounded-xl p-3 text-center">

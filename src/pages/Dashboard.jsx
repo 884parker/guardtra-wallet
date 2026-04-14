@@ -99,6 +99,7 @@ export default function Dashboard() {
             const bal = balances[type];
             const ethAmt = bal?.balance_eth ?? null;
             const balanceStr = loadingBalances ? '...' : ethAmt !== null ? `${ethAmt.toFixed(4)} ETH` : 'No wallet';
+            const routeMap = { vault: '/Vault', guard: '/Hold', liquidity: '/Liquidity' };
             return (
               <WalletCard
                 key={type}
@@ -106,7 +107,7 @@ export default function Dashboard() {
                 balance={balanceStr}
                 address={wallet?.address || ''}
                 pending={type === 'guard' ? pendingTxs.length : undefined}
-                onClick={() => wallet?.address ? navigate(`/${type.charAt(0).toUpperCase() + type.slice(1)}`) : setAddAddressFor({ type, id: wallet?.id })}
+                onClick={() => wallet?.address ? navigate(routeMap[type]) : setAddAddressFor({ type, id: wallet?.id })}
               />
             );
           })}

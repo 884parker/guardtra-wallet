@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Shield, Vault, Zap, ArrowRight, CheckCircle2, Loader2, Copy, Check, AlertTriangle, Eye, EyeOff, ShieldCheck, Delete } from 'lucide-react';
+import { Shield, Vault, Zap, ArrowRight, CheckCircle2, Loader2, Copy, Check, AlertTriangle, Eye, EyeOff, ShieldCheck, Delete, LogOut } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { functions } from '@/api/db';
+import { useAuth } from '@/lib/AuthContext';
 
 const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 
 export default function SetupWizard({ onComplete }) {
+  const { logout } = useAuth();
   // Steps: welcome → safe-pin → safe-confirm → safe-creating → safe-backup → generating → main-backup → done
   const [step, setStep] = useState('welcome');
   const [error, setError] = useState('');
@@ -247,6 +249,18 @@ export default function SetupWizard({ onComplete }) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
+        {/* Exit button */}
+        {step !== 'done' && step !== 'generating' && step !== 'safe-creating' && (
+          <div className="flex justify-end">
+            <button
+              onClick={async () => { await logout(); }}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Exit Setup
+            </button>
+          </div>
+        )}
         <ProgressBar />
 
         {/* ═══════════════════════════════════════
