@@ -2,13 +2,47 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
+function getPasswordStrength(pw) {
+  if (!pw) return { score: 0, label: '', color: '' };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-destructive' };
+  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-amber-500' };
+  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-emerald-500' };
+  return { score: 4, label: 'Strong', color: 'bg-emerald-400' };
+}
+
 export default function Login({ onBack }) {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const strength = getPasswordStrength(password);
+
+  const validateSignUp = () => {
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return false;
+    }
+    if (strength.score < 2) {
+      setError('Password is too weak. Add uppercase letters, numbers, or symbols.');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +50,12 @@ export default function Login({ onBack }) {
     setError('');
 
     try {
-      await signIn(email, password);
+      if (isSignUp) {
+        if (!validateSignUp()) { setLoading(false); return; }
+        await signUp(email, password);
+      } else {
+        await signIn(email, password);
+      }
     } catch (err) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -33,7 +72,9 @@ export default function Login({ onBack }) {
             <Shield className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Pause Wallet</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your wallet</p>
+          <p className="text-sm text-muted-foreground">
+            {isSignUp ? 'Create your account' : 'Sign in to your wallet'}
+          </p>
         </div>
 
         {/* Form */}
@@ -77,6 +118,43 @@ export default function Login({ onBack }) {
             </div>
           </div>
 
+          {/* Password strength bar (signup only) */}
+          {isSignUp && password && (
+            <div className="space-y-1">
+              <div className="flex gap-1">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className={`h-1 flex-1 rounded-full transition-all ${
+                    i <= strength.score ? strength.color : 'bg-muted'
+                  }`} />
+                ))}
+              </div>
+              <p className={`text-xs ${strength.score <= 1 ? 'text-destructive' : strength.score <= 2 ? 'text-amber-500' : 'text-emerald-400'}`}>
+                {strength.label} {strength.score <= 1 && '— use 8+ chars, uppercase, numbers, symbols'}
+              </p>
+            </div>
+          )}
+
+          {/* Confirm password (signup only) */}
+          {isSignUp && (
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground uppercase tracking-wide">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  style={{ color: '#f0f0f0', backgroundColor: '#1a1a2e' }}
+                  className={`w-full border rounded-xl pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary ${
+                    confirmPassword && confirmPassword !== password ? 'border-destructive' : 'border-border'
+                  }`}
+                />
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive">
               {error}
@@ -89,7 +167,7 @@ export default function Login({ onBack }) {
             className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-medium text-sm hover:opacity-90 disabled:opacity-60 transition-opacity flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Sign In
+            {isSignUp ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
@@ -114,19 +192,16 @@ export default function Login({ onBack }) {
           Continue with Google
         </button>
 
-        {/* Link to Safe wallet for new users */}
-        <div className="bg-card border border-border rounded-xl p-4 text-center space-y-2">
-          <p className="text-sm text-muted-foreground">Don't have an account yet?</p>
-          <a
-            href="https://app.pausewallet.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium text-sm"
+        {/* Toggle Sign In / Sign Up */}
+        <p className="text-center text-sm text-muted-foreground">
+          {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <button
+            onClick={() => { setIsSignUp(!isSignUp); setError(''); setConfirmPassword(''); }}
+            className="text-primary hover:underline font-medium"
           >
-            Sign up at PauseSafe first →
-          </a>
-          <p className="text-xs text-muted-foreground">Create your recovery wallet, then come back here to sign in.</p>
-        </div>
+            {isSignUp ? 'Sign in' : 'Sign up'}
+          </button>
+        </p>
 
         {onBack && (
           <p className="text-center">

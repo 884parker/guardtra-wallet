@@ -198,7 +198,7 @@ export default function Landing({ onLaunch }) {
           <div style={{ background: '#12121a', border: '1px solid #222235', borderRadius: 20, padding: '2.5rem', textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', padding: '0.5rem 1.25rem', borderRadius: 100, fontSize: '0.8rem', fontWeight: 600, color: '#c9a84c', marginBottom: '1rem' }}>📋 USPTO Filed</div>
             <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Patent-Pending Technology</h3>
-            <p style={{ color: '#8888a0', fontSize: '0.9rem', maxWidth: 500, margin: '0 auto' }}>Pause Wallet's three-layer security architecture is protected by provisional patents filed with the United States Patent and Trademark Office.</p>
+            <p style={{ color: '#8888a0', fontSize: '0.9rem', maxWidth: 500, margin: '0 auto' }}>Pause Wallet's four-layer security architecture is protected by provisional patents filed with the United States Patent and Trademark Office.</p>
           </div>
         </div>
       </section>
