@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const LABELS = { vault: 'Vault', guard: 'Hold', liquidity: 'Liquidity' };
+const LABELS = { vault: 'Vault', guard: 'Pause', liquidity: 'Liquidity' };
 
 export default function AddAddressModal({ walletType, existingId, onClose, onSaved }) {
   const [address, setAddress] = useState('');

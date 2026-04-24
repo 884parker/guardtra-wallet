@@ -135,15 +135,15 @@ export default function NotificationBell({ guardThresholdETH = 5 }) {
                           {alert.severity === 'critical' ? '🚨 ' : '⚠️ '}
                           {alert.type === 'unauthorized_transaction' ? 'Unauthorized Transaction' :
                            alert.type === 'high_value_transaction'   ? 'High-Value Transfer' :
-                           alert.type === 'guard_threshold_exceeded'  ? 'Hold Threshold Exceeded' : 'Alert'}
+                           alert.type === 'guard_threshold_exceeded'  ? 'Pause Threshold Exceeded' : 'Alert'}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{alert.message}</p>
                         {alert.transaction_id && (
                           <button
-                            onClick={() => { navigate('/Hold'); setOpen(false); }}
+                            onClick={() => { navigate('/Pause'); setOpen(false); }}
                             className="flex items-center gap-1 text-xs text-primary mt-1 hover:underline"
                           >
-                            <ExternalLink className="w-3 h-3" /> Review in Hold
+                            <ExternalLink className="w-3 h-3" /> Review in Pause
                           </button>
                         )}
                         <p className="text-xs text-muted-foreground/60 mt-1">

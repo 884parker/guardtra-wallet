@@ -37,8 +37,10 @@ export default function Settings() {
   const [networkSaved, setNetworkSaved] = useState(false);
 
   useEffect(() => {
-    base44.entities.AppConfig.filter({ key: 'security_pin' })
-      .then(res => setPinExists(res.length > 0))
+    // Check if PIN exists by probing the wallet endpoint
+    // If user_wallets has a record, they have a PIN (it's required during Safe wallet creation)
+    base44.entities.UserWallet.list('-created_at', 1)
+      .then(res => setPinExists(res && res.length > 0 && !!res[0].pin_hash))
       .catch(() => {});
     base44.entities.AppConfig.filter({ key: 'safe_wallet_address' })
       .then(res => {
@@ -112,8 +114,8 @@ export default function Settings() {
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Wallet Setup</h2>
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <div>
-            <label className="text-sm font-medium text-foreground block mb-1">PauseSafe Wallet Address</label>
-            <p className="text-xs text-muted-foreground mb-2">Your PauseSafe recovery wallet address. Revoked transactions are automatically routed here for safekeeping.</p>
+            <label className="text-sm font-medium text-foreground block mb-1">Safe Wallet Address</label>
+            <p className="text-xs text-muted-foreground mb-2">Your Safe recovery wallet address. Revoked transactions are automatically routed here for safekeeping.</p>
             <div className="flex gap-2">
               <input
                 value={safeWalletAddress}
@@ -180,7 +182,7 @@ export default function Settings() {
               <KeyRound className="w-4 h-4 text-primary" />
               <div className="text-left">
                 <div className="text-sm text-foreground">Security PIN</div>
-                <div className="text-xs text-muted-foreground">{pinExists ? 'Change your PIN' : 'Set a PIN to access seed phrases'}</div>
+                <div className="text-xs text-muted-foreground">{pinExists ? 'Change your 6-digit unlock PIN' : 'Set a PIN to secure your wallet'}</div>
               </div>
             </div>
             <span className={`text-xs px-2 py-0.5 rounded-full ${pinExists ? 'bg-accent/10 text-accent' : 'bg-destructive/10 text-destructive'}`}>
@@ -189,7 +191,7 @@ export default function Settings() {
           </button>
           {[
             { wallet: 'vault', label: 'Vault Wallet Seed', icon: Shield, color: 'text-vault' },
-            { wallet: 'guard', label: 'Hold Wallet Seed', icon: Lock, color: 'text-guard' },
+            { wallet: 'guard', label: 'Pause Wallet Seed', icon: Lock, color: 'text-guard' },
             { wallet: 'liquidity', label: 'Liquidity Wallet Seed', icon: Eye, color: 'text-liquidity' },
           ].map(item => {
             const Icon = item.icon;
@@ -216,7 +218,7 @@ export default function Settings() {
         <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
           {[
             { key: 'vaultAlert', label: 'Vault transaction alerts', desc: 'Instant alert when Vault sends' },
-            { key: 'guardRelease', label: 'Hold release reminders', desc: 'Notify before 24h release' },
+            { key: 'guardRelease', label: 'Pause release reminders', desc: 'Notify before release' },
             { key: 'email', label: 'Email notifications', desc: 'Backup alert via email' },
           ].map(item => (
             <div key={item.key} className="flex items-center justify-between px-4 py-3.5">
@@ -303,7 +305,7 @@ export default function Settings() {
       </div>
 
       {seedWallet && <SeedPhraseModal walletType={seedWallet} onClose={() => setSeedWallet(null)} />}
-      {showPinModal && <SetPinModal isFirstTime={!pinExists} onClose={() => setShowPinModal(false)} onSuccess={() => { setPinExists(true); setShowPinModal(false); }} />}
+      {showPinModal && <SetPinModal isFirstTime={false} onClose={() => setShowPinModal(false)} onSuccess={() => { setPinExists(true); setShowPinModal(false); }} />}
     </div>
   );
 }

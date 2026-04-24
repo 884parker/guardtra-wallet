@@ -12,12 +12,12 @@ export default function SetupWizard({ onComplete }) {
   const [step, setStep] = useState('welcome');
   const [error, setError] = useState('');
 
-  // PauseSafe PIN state
+  // Safe PIN state
   const [safePin, setSafePin] = useState('');
   const [safeConfirmPin, setSafeConfirmPin] = useState('');
   const [safePinError, setSafePinError] = useState('');
 
-  // PauseSafe wallet result
+  // Safe wallet result
   const [safeAddress, setSafeAddress] = useState('');
   const [safeSeedPhrase, setSafeSeedPhrase] = useState('');
 
@@ -32,7 +32,7 @@ export default function SetupWizard({ onComplete }) {
   const [mainBackedUp, setMainBackedUp] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Check if Safe wallet already exists (e.g., user signed up on PauseSafe site previously)
+  // Check if Safe wallet already exists (e.g., user signed up on Safe site previously)
   const [existingSafe, setExistingSafe] = useState(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
 
@@ -119,7 +119,7 @@ export default function SetupWizard({ onComplete }) {
         const seedRes = await functions.invoke('wallet', { action: 'get_seed_phrase', pin: safePin });
         setSafeSeedPhrase(seedRes?.data?.seed_phrase || seedRes?.data?.seedPhrase || seedRes?.data?.mnemonic || '');
       } catch (seedErr) {
-        // If seed phrase fetch fails, still proceed — user can access it later in PauseSafe Settings
+        // If seed phrase fetch fails, still proceed — user can access it later in Safe Settings
         console.warn('Could not fetch seed phrase:', seedErr);
         setSafeSeedPhrase('');
       }
@@ -161,7 +161,7 @@ export default function SetupWizard({ onComplete }) {
       // Save the Safe wallet address for the main wallet
       await base44.entities.AppConfig.create({ key: 'safe_wallet_address', value: addr });
 
-      // Generate Vault, Hold, Liquidity wallets
+      // Generate Vault, Pause, Liquidity wallets
       const res = await base44.functions.invoke('generateWallets', {});
       if (res.data?.error) throw new Error(res.data.error);
 
@@ -202,12 +202,12 @@ export default function SetupWizard({ onComplete }) {
   const currentIdx = stepOrder.indexOf(step);
   const progressLabels = existingSafe
     ? ['Welcome', 'Generate', 'Backup', 'Done']
-    : ['Welcome', 'PauseSafe', 'PauseSafe', 'PauseSafe', 'Safe Backup', 'Generate', 'Wallet Backup', 'Done'];
+    : ['Welcome', 'Safe', 'Safe', 'Safe', 'Safe Backup', 'Generate', 'Wallet Backup', 'Done'];
 
   const ProgressBar = () => {
     const stages = existingSafe
       ? [{ label: 'Welcome' }, { label: 'Generate' }, { label: 'Backup' }, { label: 'Done' }]
-      : [{ label: 'Account' }, { label: 'PauseSafe' }, { label: 'Wallets' }, { label: 'Done' }];
+      : [{ label: 'Account' }, { label: 'Safe' }, { label: 'Wallets' }, { label: 'Done' }];
 
     let activeStage;
     if (existingSafe) {
@@ -275,7 +275,7 @@ export default function SetupWizard({ onComplete }) {
               <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to Pause Wallet</h1>
               <p className="text-muted-foreground">
                 {existingSafe
-                  ? "We found your PauseSafe wallet! Let's generate your main wallets."
+                  ? "We found your Safe wallet! Let's generate your main wallets."
                   : "Let's set up your complete four-layer security system. This takes about 3 minutes."}
               </p>
             </div>
@@ -290,7 +290,7 @@ export default function SetupWizard({ onComplete }) {
                         <Check className="w-4 h-4 text-green-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-green-400">PauseSafe — Already set up!</p>
+                        <p className="text-sm font-medium text-green-400">Safe — Already set up!</p>
                         <p className="text-xs text-muted-foreground font-mono">{existingSafe.slice(0, 10)}...{existingSafe.slice(-8)}</p>
                       </div>
                     </div>
@@ -300,7 +300,7 @@ export default function SetupWizard({ onComplete }) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">Generate your wallets</p>
-                        <p className="text-xs text-muted-foreground">We'll create your Vault, Hold, and Liquidity wallets.</p>
+                        <p className="text-xs text-muted-foreground">We'll create your Vault, Pause, and Liquidity wallets.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -320,7 +320,7 @@ export default function SetupWizard({ onComplete }) {
                         <span className="text-xs font-bold text-green-400">1</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Create PauseSafe</p>
+                        <p className="text-sm font-medium text-foreground">Create Safe Wallet</p>
                         <p className="text-xs text-muted-foreground">Your emergency recovery wallet — set a PIN and back up the seed phrase.</p>
                       </div>
                     </div>
@@ -330,7 +330,7 @@ export default function SetupWizard({ onComplete }) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">Generate your wallets</p>
-                        <p className="text-xs text-muted-foreground">We'll create your Vault, Hold, and Liquidity wallets automatically.</p>
+                        <p className="text-xs text-muted-foreground">We'll create your Vault, Pause, and Liquidity wallets automatically.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -357,7 +357,7 @@ export default function SetupWizard({ onComplete }) {
         )}
 
         {/* ═══════════════════════════════════════
-            PAUSESAFE — SET PIN
+            SAFE — SET PIN
             ═══════════════════════════════════════ */}
         {step === 'safe-pin' && (
           <div className="flex flex-col items-center gap-6 text-center">
@@ -365,7 +365,7 @@ export default function SetupWizard({ onComplete }) {
               <ShieldCheck className="w-8 h-8 text-green-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Create Your PauseSafe Wallet</h1>
+              <h1 className="text-xl font-bold text-foreground mb-2">Create Your Safe Wallet</h1>
               <p className="text-muted-foreground text-sm">
                 Choose a 6-digit PIN. You'll need it to access your Safe wallet and send funds from it.
               </p>
@@ -399,7 +399,7 @@ export default function SetupWizard({ onComplete }) {
         )}
 
         {/* ═══════════════════════════════════════
-            PAUSESAFE — CONFIRM PIN
+            SAFE — CONFIRM PIN
             ═══════════════════════════════════════ */}
         {step === 'safe-confirm' && (
           <div className="flex flex-col items-center gap-6 text-center">
@@ -434,20 +434,20 @@ export default function SetupWizard({ onComplete }) {
         )}
 
         {/* ═══════════════════════════════════════
-            PAUSESAFE — CREATING
+            SAFE — CREATING
             ═══════════════════════════════════════ */}
         {step === 'safe-creating' && (
           <div className="flex flex-col items-center gap-6 text-center py-12">
             <Loader2 className="w-12 h-12 text-green-400 animate-spin" />
             <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Creating PauseSafe Wallet</h1>
+              <h1 className="text-xl font-bold text-foreground mb-2">Creating Safe Wallet</h1>
               <p className="text-muted-foreground text-sm">Generating your emergency recovery wallet...</p>
             </div>
           </div>
         )}
 
         {/* ═══════════════════════════════════════
-            PAUSESAFE — BACKUP SEED PHRASE
+            SAFE — BACKUP SEED PHRASE
             ═══════════════════════════════════════ */}
         {step === 'safe-backup' && (
           <div className="flex flex-col items-center gap-6">
@@ -455,7 +455,7 @@ export default function SetupWizard({ onComplete }) {
               <CheckCircle2 className="w-8 h-8 text-green-400" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-bold text-foreground mb-2">PauseSafe Created!</h1>
+              <h1 className="text-xl font-bold text-foreground mb-2">Safe Wallet Created!</h1>
               <p className="text-muted-foreground text-sm">Back up your Safe wallet seed phrase before we continue.</p>
             </div>
 
@@ -463,7 +463,7 @@ export default function SetupWizard({ onComplete }) {
             <div className="bg-card border border-green-500/30 rounded-xl p-4 w-full">
               <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-green-400 font-semibold uppercase tracking-wide">PauseSafe Address</p>
+                  <p className="text-xs text-green-400 font-semibold uppercase tracking-wide">Safe Address</p>
                   <button onClick={() => copy('safe-addr', safeAddress)} className="text-muted-foreground hover:text-foreground p-1">
                     {copied['safe-addr'] ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
@@ -476,7 +476,7 @@ export default function SetupWizard({ onComplete }) {
             {safeSeedPhrase && (
               <div className="bg-destructive/5 border border-destructive/30 rounded-xl p-4 w-full space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-destructive">PauseSafe Seed Phrase</h3>
+                  <h3 className="text-sm font-semibold text-destructive">Safe Wallet Seed Phrase</h3>
                   <button onClick={() => setShowSafePhrase(!showSafePhrase)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                     {showSafePhrase ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                     {showSafePhrase ? 'Hide' : 'Reveal'}
@@ -499,8 +499,8 @@ export default function SetupWizard({ onComplete }) {
                 <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
                   <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-400">
-                    <strong>Write this down!</strong> Your PauseSafe seed phrase is your last line of defense.
-                    You can also view it later in PauseSafe Settings at safe.pausewallet.com.
+                    <strong>Write this down!</strong> Your Safe wallet seed phrase is your last line of defense.
+                    You can also view it later in Safe Settings at safe.pausewallet.com.
                   </p>
                 </div>
               </div>
@@ -512,7 +512,7 @@ export default function SetupWizard({ onComplete }) {
                 <div className="flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Your PauseSafe seed phrase</strong> can be viewed in PauseSafe Settings.
+                    <strong className="text-foreground">Your Safe wallet seed phrase</strong> can be viewed in Safe Settings.
                     Go to <a href="https://safe.pausewallet.com" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline font-medium">safe.pausewallet.com</a>,
                     sign in with the same account, unlock with your PIN, and go to Settings to view it.
                   </p>
@@ -529,7 +529,7 @@ export default function SetupWizard({ onComplete }) {
                   onChange={e => setSafeBackedUp(e.target.checked)}
                   className="mt-0.5 accent-emerald-500"
                 />
-                <span className="text-sm text-foreground">I have saved my PauseSafe seed phrase in a secure location.</span>
+                <span className="text-sm text-foreground">I have saved my Safe wallet seed phrase in a secure location.</span>
               </label>
             ) : null}
 
@@ -558,7 +558,7 @@ export default function SetupWizard({ onComplete }) {
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
             <div>
               <h1 className="text-xl font-bold text-foreground mb-2">Generating Your Wallets</h1>
-              <p className="text-muted-foreground text-sm">Creating Vault, Hold, and Liquidity wallets...</p>
+              <p className="text-muted-foreground text-sm">Creating Vault, Pause, and Liquidity wallets...</p>
             </div>
           </div>
         )}
@@ -583,7 +583,7 @@ export default function SetupWizard({ onComplete }) {
               {/* Show Safe address first */}
               <div className="flex items-center justify-between bg-green-500/5 border border-green-500/20 rounded-lg px-3 py-2">
                 <div>
-                  <span className="text-xs text-green-400 uppercase font-semibold">PauseSafe ✓</span>
+                  <span className="text-xs text-green-400 uppercase font-semibold">Safe ✓</span>
                   <p className="text-xs font-mono text-foreground">{existingSafe || safeAddress}</p>
                 </div>
                 <button onClick={() => copy('safe', existingSafe || safeAddress)} className="text-muted-foreground hover:text-foreground p-1">
@@ -607,7 +607,7 @@ export default function SetupWizard({ onComplete }) {
             {/* Recovery phrases */}
             <div className="bg-destructive/5 border border-destructive/30 rounded-xl p-4 w-full space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-destructive">Vault · Hold · Liquidity Recovery Phrases</h3>
+                <h3 className="text-sm font-semibold text-destructive">Vault · Pause · Liquidity Recovery Phrases</h3>
                 <button onClick={() => setShowMainPhrases(!showMainPhrases)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                   {showMainPhrases ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                   {showMainPhrases ? 'Hide' : 'Reveal'}
@@ -635,8 +635,8 @@ export default function SetupWizard({ onComplete }) {
             <div className="bg-card border border-border rounded-xl p-4 w-full">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">💡 Where to find seed phrases later:</strong><br />
-                • PauseSafe seed phrase → <strong className="text-green-400">PauseSafe Settings</strong> (at safe.pausewallet.com)<br />
-                • Vault, Hold, Liquidity phrases → <strong className="text-primary">Pause Wallet Settings</strong> (this app)
+                • Safe wallet seed phrase → <strong className="text-green-400">Safe Settings</strong> (at safe.pausewallet.com)<br />
+                • Vault, Pause, Liquidity phrases → <strong className="text-primary">Pause Wallet Settings</strong> (this app)
               </p>
             </div>
 

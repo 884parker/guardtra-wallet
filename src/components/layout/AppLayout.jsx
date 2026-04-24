@@ -7,7 +7,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 const navItems = [
   { path: '/Dashboard', icon: Layers, label: 'Dashboard' },
   { path: '/Vault', icon: Shield, label: 'Vault' },
-  { path: '/Hold', icon: Activity, label: 'Hold' },
+  { path: '/Pause', icon: Activity, label: 'Pause' },
   { path: '/Liquidity', icon: Zap, label: 'Liquidity' },
   { path: '/Recovery', icon: ShieldCheck, label: 'Recovery' },
   { path: '/Analytics', icon: BarChart2, label: 'Analytics' },

@@ -84,7 +84,7 @@ export default function Dashboard() {
         <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="px-2 py-1 bg-vault/10 text-vault rounded-lg border border-vault/20">Vault</span>
           <ArrowRight className="w-3 h-3" />
-          <span className="px-2 py-1 bg-guard/10 text-guard rounded-lg border border-guard/20">Hold ({lockHours}h hold)</span>
+          <span className="px-2 py-1 bg-guard/10 text-guard rounded-lg border border-guard/20">Pause ({lockHours}h)</span>
           <ArrowRight className="w-3 h-3" />
           <span className="px-2 py-1 bg-muted rounded-lg">Recipient</span>
         </div>
@@ -99,7 +99,7 @@ export default function Dashboard() {
             const bal = balances[type];
             const ethAmt = bal?.balance_eth ?? null;
             const balanceStr = loadingBalances ? '...' : ethAmt !== null ? `${ethAmt.toFixed(4)} ETH` : 'No wallet';
-            const routeMap = { vault: '/Vault', guard: '/Hold', liquidity: '/Liquidity' };
+            const routeMap = { vault: '/Vault', guard: '/Pause', liquidity: '/Liquidity' };
             return (
               <WalletCard
                 key={type}
@@ -120,9 +120,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-guard" />
-              <span className="text-sm font-medium text-guard">{pendingTxs.length} transaction{pendingTxs.length > 1 ? 's' : ''} in Hold</span>
+              <span className="text-sm font-medium text-guard">{pendingTxs.length} transaction{pendingTxs.length > 1 ? 's' : ''} paused</span>
             </div>
-            <button onClick={() => navigate('/Hold')} className="text-xs text-guard hover:underline">Review →</button>
+            <button onClick={() => navigate('/Pause')} className="text-xs text-guard hover:underline">Review →</button>
           </div>
           {pendingTxs.slice(0, 2).map(tx => (
             <div key={tx.id} className="flex items-center justify-between py-2 border-t border-guard/10 text-sm">
@@ -183,7 +183,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Vault Protected', value: '85%', color: 'text-vault' },
-          { label: 'Active Holds', value: pendingTxs.length.toString(), color: 'text-guard' },
+          { label: 'Active Pauses', value: pendingTxs.length.toString(), color: 'text-guard' },
           { label: 'Threats Blocked', value: '0', color: 'text-accent' },
         ].map(item => (
           <div key={item.label} className="bg-card border border-border rounded-xl p-4 text-center">

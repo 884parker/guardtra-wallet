@@ -23,7 +23,7 @@ export default function AlertBanner() {
           <AlertTriangle className="w-4 h-4 flex-shrink-0 animate-pulse" />
           <span><strong>{unauthCount} unauthorized transaction{unauthCount > 1 ? 's' : ''}</strong> detected — take action immediately</span>
         </div>
-        <Link to="/Hold" className="flex items-center gap-1 text-xs font-medium text-destructive hover:underline flex-shrink-0">
+        <Link to="/Pause" className="flex items-center gap-1 text-xs font-medium text-destructive hover:underline flex-shrink-0">
           Review <ChevronRight className="w-3 h-3" />
         </Link>
       </div>

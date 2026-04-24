@@ -3,28 +3,28 @@ import { Fuel } from 'lucide-react';
 import TopOffModal from './TopOffModal';
 
 /**
- * Gas Tank — car-style fuel gauge for Hold wallet gas reserve.
+ * Gas Tank - car-style fuel gauge for Pause wallet gas reserve.
  * Shows how much ETH is available for transaction fees.
  */
 export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance = 0, ethPrice = 2450, onTopOff }) {
   const [showTopOff, setShowTopOff] = useState(false);
   // Gas reserve = balance minus what's held for transactions
   const gasReserve = Math.max(0, balanceEth - heldAmount);
-  
+
   // Typical Sepolia/mainnet gas cost for a transfer ~0.002-0.005 ETH
   // Full tank = enough for ~10 transactions (~0.05 ETH)
   const FULL_TANK = 0.05;
   const fillPercent = Math.min(100, (gasReserve / FULL_TANK) * 100);
-  
+
   // Color based on fill level
   const getColor = () => {
     if (fillPercent >= 50) return { fill: 'text-emerald-400', bg: 'bg-emerald-400', label: 'Good' };
     if (fillPercent >= 25) return { fill: 'text-amber-400', bg: 'bg-amber-400', label: 'Low' };
     return { fill: 'text-red-400', bg: 'bg-red-400', label: 'Empty' };
   };
-  
+
   const color = getColor();
-  
+
   // Needle rotation: -90deg (empty/left) to 90deg (full/right)
   const needleAngle = -90 + (fillPercent / 100) * 180;
 
@@ -34,14 +34,14 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
         <Fuel className={`w-4 h-4 ${color.fill}`} />
         <span className="text-sm font-medium text-foreground">Gas Tank</span>
         <span className={`text-xs px-2 py-0.5 rounded-full border ${
-          fillPercent >= 50 
-            ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' 
-            : fillPercent >= 25 
+          fillPercent >= 50
+            ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30'
+            : fillPercent >= 25
               ? 'bg-amber-400/10 text-amber-400 border-amber-400/30'
               : 'bg-red-400/10 text-red-400 border-red-400/30'
         }`}>{color.label}</span>
       </div>
-      
+
       {/* Gauge */}
       <div className="flex items-center gap-4">
         <div className="relative w-24 h-14 flex-shrink-0">
@@ -73,7 +73,7 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
             </g>
           </svg>
         </div>
-        
+
         <div className="flex-1">
           <div className="text-lg font-bold text-foreground font-mono">
             {gasReserve.toFixed(4)} <span className="text-sm text-muted-foreground font-normal">ETH</span>
@@ -82,14 +82,14 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
             ≈ ${(gasReserve * ethPrice).toFixed(2)} USD
           </div>
           <div className="text-xs text-muted-foreground mt-0.5">
-            {gasReserve > 0.002 
+            {gasReserve > 0.002
               ? `~${Math.floor(gasReserve / 0.003)} transactions worth of gas`
               : 'Top up to process pending transactions'
             }
           </div>
           {fillPercent < 25 && (
             <div className="mt-1 text-xs text-red-400 font-medium">
-              ⚠ Gas too low — transactions may fail
+              ⚠ Gas too low - transactions may fail
             </div>
           )}
         </div>
@@ -105,7 +105,7 @@ export default function GasTank({ balanceEth = 0, heldAmount = 0, vaultBalance =
         }`}
       >
         <Fuel className="w-3.5 h-3.5" />
-        {fillPercent < 25 ? 'Fill Up — Tank Empty' : fillPercent < 50 ? 'Top Off Gas Tank' : 'Add Gas'}
+        {fillPercent < 25 ? 'Fill Up - Tank Empty' : fillPercent < 50 ? 'Top Off Gas Tank' : 'Add Gas'}
       </button>
 
       {showTopOff && (

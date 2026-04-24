@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { ethers } from 'https://esm.sh/ethers@6.13.4';
+import { ethers } from 'npm:ethers@6.13.5';
 
 // Encrypt private key with PIN using Web Crypto
 async function encryptWithPin(data: string, pin: string): Promise<string> {

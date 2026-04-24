@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 /**
- * Fetches the user's configured Hold lock duration.
+ * Fetches the user's configured Pause lock duration.
  * Defaults to 24 hours if not set.
  * Returns { lockHours, lockMs, isLoading }
  */

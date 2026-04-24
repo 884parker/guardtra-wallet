@@ -1,5 +1,5 @@
 -- ============================================================
--- GUARDTRA WALLET — Supabase Database Schema
+-- PAUSE WALLET — Supabase Database Schema
 -- Replaces Base44 entities
 -- Run this in Supabase SQL Editor after creating your project
 -- ============================================================
@@ -127,7 +127,7 @@ create table public.alert_log (
 );
 
 -- ============================================================
--- GUARDTRASAFE: USER_WALLETS (PIN-encrypted wallets)
+-- PAUSESAFE: USER_WALLETS (PIN-encrypted wallets)
 -- ============================================================
 create table public.user_wallets (
   id uuid default uuid_generate_v4() primary key,
@@ -143,7 +143,7 @@ create table public.user_wallets (
 );
 
 -- ============================================================
--- GUARDTRASAFE: RECEIVED_FUNDS (incoming revoked txns)
+-- PAUSESAFE: RECEIVED_FUNDS (incoming revoked txns)
 -- ============================================================
 create table public.received_funds (
   id uuid default uuid_generate_v4() primary key,
@@ -158,7 +158,7 @@ create table public.received_funds (
 );
 
 -- ============================================================
--- GUARDTRASAFE: DISBURSEMENTS (outgoing from Safe)
+-- PAUSESAFE: DISBURSEMENTS (outgoing from Safe)
 -- ============================================================
 create table public.disbursements (
   id uuid default uuid_generate_v4() primary key,

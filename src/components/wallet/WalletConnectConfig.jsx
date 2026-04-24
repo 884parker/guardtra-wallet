@@ -1,5 +1,5 @@
 // WalletConnect/Reown has been intentionally removed from Pause Wallet.
-// All transactions are programmatic — internal routing between Pause Wallet and PauseSafe.
+// All transactions are programmatic — internal routing between Pause Wallet and Safe.
 // No external wallet connections = no external attack surface.
 
 export default function WalletConnectConfig() {

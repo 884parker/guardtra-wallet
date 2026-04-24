@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const STATUS_CONFIG = {
   pending:           { label: 'Pending',   color: 'text-muted-foreground', bg: 'bg-muted', icon: Clock },
-  held:              { label: 'Guard Hold', color: 'text-guard',           bg: 'bg-guard/10', icon: ShieldCheck },
+  held:              { label: 'Paused', color: 'text-guard',           bg: 'bg-guard/10', icon: ShieldCheck },
   completed:         { label: 'Completed', color: 'text-accent',           bg: 'bg-accent/10', icon: CheckCircle },
   revoked:           { label: 'Revoked',   color: 'text-destructive',      bg: 'bg-destructive/10', icon: XCircle },
   emergency_frozen:  { label: 'Frozen',    color: 'text-destructive',      bg: 'bg-destructive/10', icon: AlertTriangle },

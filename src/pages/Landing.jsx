@@ -69,11 +69,15 @@ export default function Landing({ onLaunch }) {
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* Nav */}
+      {/* Nav — solid background, safe-area aware for mobile notch */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        padding: '1rem 2rem', background: 'rgba(10,10,15,0.85)',
-        backdropFilter: 'blur(20px)', borderBottom: '1px solid #222235',
+        paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
+        paddingBottom: '1rem',
+        paddingLeft: 'max(2rem, env(safe-area-inset-left, 0px))',
+        paddingRight: 'max(2rem, env(safe-area-inset-right, 0px))',
+        background: '#0a0a0f',
+        borderBottom: '1px solid #222235',
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -99,7 +103,7 @@ export default function Landing({ onLaunch }) {
             Hackers Can Steal Your Keys.<br /><span className="gold">They Can't Steal Your Crypto.</span>
           </h1>
           <p style={{ fontSize: '1.2rem', color: '#8888a0', maxWidth: '600px', margin: '0 auto 1rem', lineHeight: 1.7 }}>
-            Pause Wallet is a new kind of crypto wallet. Every transaction is time-locked. Every suspicious move can be revoked. And if the worst happens, your funds automatically route to <strong style={{ color: '#f0f0f0' }}>PauseSafe</strong> — a hardened recovery wallet, completely out of reach.
+            Pause Wallet is a new kind of crypto wallet. Every transaction is time-locked. Every suspicious move can be revoked. And if the worst happens, your funds automatically route to your <strong style={{ color: '#f0f0f0' }}>Safe</strong> — a hardened recovery wallet, completely out of reach.
           </p>
           <p style={{ color: '#8888a0', fontSize: '1.05rem', maxWidth: '580px', margin: '0 auto 2rem' }}>
             Sent to the wrong address? Wrong network? With Pause Wallet, mistakes aren't permanent anymore. <strong style={{ color: '#f0f0f0' }}>You get a second chance.</strong>
@@ -109,7 +113,7 @@ export default function Landing({ onLaunch }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <div className="flow-step" style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>🔐 Vault — Store</div>
             <span style={{ color: '#8888a0', fontSize: '1.2rem' }}>→</span>
-            <div className="flow-step" style={{ background: 'rgba(201,168,76,0.12)', color: '#e4c76b', border: '1px solid rgba(201,168,76,0.25)' }}>⏱️ Hold — Time Lock</div>
+            <div className="flow-step" style={{ background: 'rgba(201,168,76,0.12)', color: '#e4c76b', border: '1px solid rgba(201,168,76,0.25)' }}>⏱️ Pause — Time Lock</div>
             <span style={{ color: '#8888a0', fontSize: '1.2rem' }}>→</span>
             <div className="flow-step" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' }}>🛡️ Safe — Recover</div>
           </div>
@@ -133,10 +137,10 @@ export default function Landing({ onLaunch }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             {[
-              { num: '1', title: 'Vault — Your Savings Account', desc: 'Think of the Vault like a savings account for your crypto. This is where the bulk of your portfolio lives. When you send crypto out, it enters the Hold first.' },
-              { num: '2', title: 'Hold — Customizable Time Lock', desc: 'Every Vault transaction is held before reaching the recipient. You choose the lock time — 6, 12, or 24 hours. During this window, you can revoke anything you didn\'t authorize.' },
+              { num: '1', title: 'Vault — Your Savings Account', desc: 'Think of the Vault like a savings account for your crypto. This is where the bulk of your portfolio lives. When you send crypto out, it enters Pause first.' },
+              { num: '2', title: 'Pause — Customizable Time Lock', desc: 'Every Vault transaction is paused before reaching the recipient. You choose the lock time — 6, 12, or 24 hours. During this window, you can revoke anything you didn\'t authorize.' },
               { num: '3', title: 'Liquidity — Your Checking Account', desc: 'Keep smaller amounts here for everyday use, quick trades, and time-sensitive moves. No time lock, no delay. Sends go out instantly.' },
-              { num: '4', title: 'Safe — Emergency Recovery', desc: 'When you revoke a transaction, funds route to PauseSafe — a completely separate hardened wallet. No seed phrase access, no external connections, PIN-protected.' },
+              { num: '4', title: 'Safe — Emergency Recovery', desc: 'When you revoke a transaction, funds route to your Safe — a completely separate hardened wallet. No seed phrase access, no external connections, PIN-protected.' },
             ].map(s => (
               <div key={s.num} className="step-card">
                 <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.25rem', background: 'rgba(201,168,76,0.15)', color: '#e4c76b' }}>{s.num}</div>
@@ -152,9 +156,9 @@ export default function Landing({ onLaunch }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
                 'Attacker gains access to your Vault and initiates a transfer of all your ETH.',
-                'The transaction enters the Hold and is held for your configured lock time. The attacker can\'t speed this up.',
+                'The transaction enters Pause and is held for your configured lock time. The attacker can\'t speed this up.',
                 'You get an alert. You open Pause Wallet and see the unauthorized transfer. You hit Revoke.',
-                'The transaction is cancelled. Your funds are instantly routed to your PauseSafe wallet.',
+                'The transaction is cancelled. Your funds are instantly routed to your Safe wallet.',
                 'You secure your accounts, set up a new Vault, and transfer funds back. Zero loss.',
               ].map((text, i) => (
                 <div key={i} className="scenario-step" style={i === 4 ? { borderColor: 'rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.04)' } : {}}>
@@ -177,8 +181,8 @@ export default function Landing({ onLaunch }) {
             {[
               { icon: '⏱️', title: 'Customizable Time Lock', desc: 'Choose 6, 12, or 24 hours. Attackers can\'t move your funds before you notice.' },
               { icon: '🔄', title: 'Instant Revoke', desc: 'See something wrong? One click revokes the transaction and routes funds to Safe.' },
-              { icon: '🔒', title: 'No Seed Exposure', desc: 'PauseSafe locks down the seed phrase entirely. No one can accidentally leak it.' },
-              { icon: '🔄', title: 'Undo Your Mistakes', desc: 'Wrong address? Wrong network? Revoke during the hold window. Mistakes don\'t have to be permanent.' },
+              { icon: '🔒', title: 'No Seed Exposure', desc: 'Safe locks down the seed phrase entirely. No one can accidentally leak it.' },
+              { icon: '🔄', title: 'Undo Your Mistakes', desc: 'Wrong address? Wrong network? Revoke during the pause window. Mistakes don\'t have to be permanent.' },
               { icon: '⚡', title: 'Liquidity Wallet', desc: 'Your checking account for crypto. No time lock — sends go out instantly.' },
               { icon: '🛡️', title: 'Emergency Mode', desc: 'Detect a breach? Emergency protection migrates all held funds to a new vault instantly.' },
             ].map(f => (
@@ -213,7 +217,7 @@ export default function Landing({ onLaunch }) {
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={onLaunch} className="landing-btn landing-btn-primary">🚀 Launch Pause Wallet</button>
-          <button onClick={onLaunch} className="landing-btn landing-btn-green">🛡️ Set Up PauseSafe</button>
+          <button onClick={onLaunch} className="landing-btn landing-btn-green">🛡️ Set Up Safe Wallet</button>
         </div>
       </section>
 

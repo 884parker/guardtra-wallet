@@ -55,7 +55,7 @@ export default function GuardTimer({ transaction, onRevoke, onStartRecovery, onA
       {isApproved && !isUnauthorized && (
         <div className="flex items-center gap-2 mb-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-          <span className="text-xs text-emerald-400 font-medium">Approved — will auto-release on schedule</span>
+          <span className="text-xs text-emerald-400 font-medium">Approved — will release when pause expires</span>
         </div>
       )}
 
@@ -145,9 +145,9 @@ export default function GuardTimer({ transaction, onRevoke, onStartRecovery, onA
           </div>
 
           {isExpired ? (
-            <p className="text-xs text-guard mt-2">⏱ Time lock expired — auto-releasing shortly...</p>
+            <p className="text-xs text-guard mt-2">⏱ Pause expired — auto-releasing shortly...</p>
           ) : (
-            <p className="text-xs text-muted-foreground mt-2">Auto-releases after {lockHours}h if not revoked.</p>
+            <p className="text-xs text-muted-foreground mt-2">Auto-releases after {lockHours}h pause if not revoked.</p>
           )}
         </div>
       </div>

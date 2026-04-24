@@ -37,6 +37,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* Prevent white flash on load & fill notch/safe area with dark bg */
+    background: #0a0a0f;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-inter);

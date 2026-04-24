@@ -94,7 +94,7 @@ export default function Guard() {
               <Activity className={`w-5 h-5 ${hasUnauthorized ? 'text-destructive' : 'text-guard'}`} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Hold Wallet</h1>
+              <h1 className="text-lg font-bold text-foreground">Pause</h1>
               <div className="flex items-center gap-1.5">
                 <p className="text-xs text-muted-foreground font-mono">{walletAddress ? `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}` : '—'}</p>
                 {walletAddress && (
@@ -109,7 +109,7 @@ export default function Guard() {
             {hasUnauthorized ? (
               <span className="text-xs bg-destructive/20 text-destructive border border-destructive/30 px-3 py-1 rounded-full animate-pulse">⚠ Alert</span>
             ) : (
-              <span className="text-xs bg-guard/10 text-guard border border-guard/30 px-3 py-1 rounded-full">{lockHours}h Security Hold</span>
+              <span className="text-xs bg-guard/10 text-guard border border-guard/30 px-3 py-1 rounded-full">{lockHours}h Security Pause</span>
             )}
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function Guard() {
           }, {});
           return (
             <div className="mt-3 pt-3 border-t border-border/50">
-              <p className="text-xs text-muted-foreground mb-2">On Hold</p>
+              <p className="text-xs text-muted-foreground mb-2">Paused</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(heldTotals).map(([asset, total]) => (
                   <div key={asset} className="flex items-center gap-1.5 bg-destructive/10 border border-destructive/20 rounded-lg px-2.5 py-1">
@@ -185,8 +185,8 @@ export default function Guard() {
         {allTxs.length === 0 ? (
           <div className="bg-card border border-border rounded-2xl p-8 text-center">
             <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No transactions held in Hold right now.</p>
-            <p className="text-xs text-muted-foreground mt-1">Vault transfers will appear here with a 24h security timer.</p>
+            <p className="text-sm text-muted-foreground">No paused transactions right now.</p>
+            <p className="text-xs text-muted-foreground mt-1">Vault transfers will appear here with a {lockHours}h security pause.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -205,10 +205,10 @@ export default function Guard() {
 
       {/* How it works */}
       <div className="bg-muted/30 border border-border rounded-xl p-4">
-        <h3 className="text-sm font-medium mb-2 text-foreground">How Hold Protection Works</h3>
+        <h3 className="text-sm font-medium mb-2 text-foreground">How Pause Protection Works</h3>
         <ul className="space-y-1.5 text-xs text-muted-foreground">
-          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>All Vault transfers are held here for {lockHours} hours before release</li>
-          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>You can revoke any transaction during the hold period</li>
+          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>All Vault transfers are paused here for {lockHours} hours before release</li>
+          <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>You can revoke any transaction during the pause period</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>Unauthorized activity triggers an immediate alert</li>
           <li className="flex items-start gap-2"><span className="text-guard mt-0.5">•</span>Emergency flow generates a new Vault and migrates held funds</li>
         </ul>

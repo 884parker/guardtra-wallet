@@ -31,7 +31,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
   }, [networkName]);
 
   useEffect(() => {
-    // Fetch the Hold wallet address so we know where to route Vault sends
+    // Fetch the Pause wallet address so we know where to route Vault sends
     base44.entities.WalletProfile.filter({ wallet_type: 'guard' })
       .then(profiles => { if (profiles[0]?.address) setGuardAddress(profiles[0].address); })
       .catch(() => {});
@@ -47,7 +47,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
      const releaseAt = new Date(Date.now() + lockMs).toISOString();
 
      if (isVault && form.asset === 'ETH' && guardAddress) {
-       // Step 1: Send ETH from Vault to Hold wallet on-chain (server-side, using vault mnemonic)
+       // Step 1: Send ETH from Vault to Pause wallet on-chain (server-side, using vault mnemonic)
        const res = await base44.functions.invoke('sendTransaction', {
          walletType: 'vault',
          toAddress: guardAddress,
@@ -56,7 +56,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
        if (res.data?.error) throw new Error(res.data.error);
        hash = res.data?.txHash || '';
      } else if (form.asset === 'ETH' && (fromWallet === 'liquidity' || fromWallet === 'guard')) {
-       // For Liquidity and Hold wallets: send directly to user's intended address
+       // For Liquidity and Pause wallets: send directly to user's intended address
        const res = await base44.functions.invoke('sendTransaction', {
          walletType: fromWallet,
          toAddress: form.to_address,
@@ -98,7 +98,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
       <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-semibold text-foreground">
-            Send from {fromWallet === 'vault' ? 'Vault' : fromWallet === 'liquidity' ? 'Liquidity' : 'Hold'}
+            Send from {fromWallet === 'vault' ? 'Vault' : fromWallet === 'liquidity' ? 'Liquidity' : 'Pause'}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
         </div>
@@ -108,7 +108,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
             {isVault && (
               <div className="flex items-start gap-2 bg-vault/10 border border-vault/30 rounded-xl p-3 mb-4">
                 <Shield className="w-4 h-4 text-vault mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-vault">Vault transfers are routed through Hold Wallet with a {lockHours}-hour security hold before reaching the destination.</p>
+                <p className="text-xs text-vault">Vault transfers are routed through Pause with a {lockHours}-hour security pause before reaching the destination.</p>
               </div>
             )}
             {isLiquidity && (
@@ -183,13 +183,13 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">To</span><span className="font-mono text-xs">{form.to_address.slice(0,10)}...{form.to_address.slice(-8)}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Network</span><span>{form.network}</span></div>
               {form.gasGwei && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Gas ({form.gasSpeed})</span><span className="text-muted-foreground">{form.gasGwei} Gwei</span></div>}
-              {isVault && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Hold</span><span className="text-guard">{lockHours} hours via Hold</span></div>}
-              {isLiquidity && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Hold</span><span className="text-liquidity">None — instant send</span></div>}
+              {isVault && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Pause</span><span className="text-guard">{lockHours} hours via Pause</span></div>}
+              {isLiquidity && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Security Pause</span><span className="text-liquidity">None — instant send</span></div>}
             </div>
             {isVault && (
               <div className="flex items-start gap-2 bg-guard/10 border border-guard/30 rounded-xl p-3 mb-4">
                 <Shield className="w-4 h-4 text-guard mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-guard">Funds will be sent from your Vault to Hold and held for {lockHours} hours — you can revoke anytime.</p>
+                <p className="text-xs text-guard">Funds will be sent from your Vault to Pause and held for {lockHours} hours — you can revoke anytime.</p>
               </div>
             )}
             {isLiquidity && (
@@ -212,7 +212,7 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
           <div className="text-center py-10">
             <Loader2 className={`w-10 h-10 animate-spin mx-auto mb-4 ${isLiquidity ? 'text-liquidity' : 'text-vault'}`} />
             <p className="text-sm font-medium text-foreground">
-              {isVault ? 'Sending from Vault to Hold...' : isLiquidity ? 'Sending from Liquidity...' : 'Sending from Hold...'}
+              {isVault ? 'Sending from Vault to Pause...' : isLiquidity ? 'Sending from Liquidity...' : 'Sending from Pause...'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">Broadcasting transaction on {networkName}. This may take ~15 seconds.</p>
           </div>
@@ -223,12 +223,12 @@ export default function SendModal({ fromWallet, onClose, onSent }) {
             <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-7 h-7 text-accent" />
             </div>
-            <h3 className="font-semibold mb-1">{isVault ? 'Routed to Hold' : isLiquidity ? 'Sent Instantly' : 'Transaction Sent'}</h3>
+            <h3 className="font-semibold mb-1">{isVault ? 'Routed to Pause' : isLiquidity ? 'Sent Instantly' : 'Transaction Sent'}</h3>
             <p className="text-sm text-muted-foreground mb-3">
               {isVault
-                ? `Funds are held in Hold Wallet for ${lockHours} hours. You can revoke from the Hold page.`
+                ? `Funds are paused for ${lockHours} hours. You can revoke from the Pause page.`
                 : isLiquidity
-                  ? 'Your transaction has been sent directly to the recipient — no hold, no delay.'
+                  ? 'Your transaction has been sent directly to the recipient — no pause, no delay.'
                   : 'Transaction submitted to network.'}
             </p>
             {txHash && (

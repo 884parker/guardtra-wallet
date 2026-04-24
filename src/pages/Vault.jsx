@@ -65,7 +65,7 @@ export default function Vault() {
         <div className="text-3xl font-bold text-vault mb-1">
           {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : `$${((balanceEth ?? 0) * ethPrice + (balanceUsdc ?? 0)).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
         </div>
-        <p className="text-xs text-muted-foreground">All outgoing transfers include a mandatory {lockHours}-hour security hold.</p>
+        <p className="text-xs text-muted-foreground">All outgoing transfers include a mandatory {lockHours}-hour security pause.</p>
       </div>
 
       {/* Security notice */}
@@ -81,7 +81,7 @@ export default function Vault() {
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <span className="bg-vault/10 text-vault px-2 py-0.5 rounded">Vault</span>
             <ArrowRight className="w-3 h-3" />
-            <span className="bg-guard/10 text-guard px-2 py-0.5 rounded">Hold ({lockHours}h)</span>
+            <span className="bg-guard/10 text-guard px-2 py-0.5 rounded">Pause ({lockHours}h)</span>
             <ArrowRight className="w-3 h-3" />
             <span className="bg-muted px-2 py-0.5 rounded">Recipient</span>
           </div>

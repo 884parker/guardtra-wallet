@@ -1,39 +1,50 @@
-**Welcome to your Base44 project** 
+# Pause Wallet
 
-**About**
+**Time-locked crypto security. Every transaction gets a cooling-off period.**
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## What Is Pause Wallet?
 
-This project contains everything you need to run your app locally.
+Pause Wallet is a multi-layer cryptocurrency wallet where every outbound transaction from the Vault is held for a configurable time lock (default 24 hours) before release. During the hold period, you can revoke any transaction — whether you made a mistake or someone compromised your wallet.
 
-**Edit the code in your local development environment**
+## Architecture
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+- **Vault Wallet** — Primary cold storage. Sends are routed through Hold.
+- **Hold Wallet** — Time-lock enforcement. Funds sit here during the cooling period.
+- **Liquidity Wallet** — Instant-send for trusted, everyday transactions.
+- **PauseSafe** — Recovery wallet. Revoked funds land here.
 
-**Prerequisites:** 
+## Stack
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+- **Frontend:** React + Vite + Tailwind CSS
+- **Backend:** Supabase (Auth, Database, Edge Functions)
+- **Blockchain:** Ethereum (Sepolia testnet / Mainnet)
+- **RPC:** Alchemy
+- **Hosting:** Vercel
 
+## Local Development
+
+```bash
+npm install
+npm run dev
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
 
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
-```
+Requires `.env.local` with Supabase credentials.
 
-Run the app: `npm run dev`
+## Edge Functions
 
-**Publish your changes**
+- `auto-release` — Cron-triggered: releases held transactions after time lock expires
+- `generate-wallets` — Creates Vault/Hold/Liquidity wallets on signup
+- `send-transaction` — Signs and broadcasts ETH transactions
+- `get-wallet-balance` — Fetches on-chain balance via Alchemy
+- `get-wallet-transfers` — Fetches transaction history via Alchemy
+- `vault-recovery` — Emergency fund recovery flow
+- `wallet` — PauseSafe wallet operations
+- `monitorAlerts` — Alert rule evaluation
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+## Patent Status
 
-**Docs & Support**
+Provisional patent filed. Patent pending.
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+---
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+© 2026 Pause Wallet. All rights reserved.

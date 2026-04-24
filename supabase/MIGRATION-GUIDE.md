@@ -61,12 +61,12 @@
 
 1. Enable Email/Password auth in Supabase dashboard
 2. Enable Google OAuth (use Google Workspace credentials)
-3. Set redirect URLs for guardtrawallet.com and guardtrasafe.com
+3. Set redirect URLs for pausewallet.com and pausesafe.com (or current domains)
 4. Build custom login/signup pages (replaces Base44 generic login)
 
 ## Deployment
 
-- **Frontend:** Vercel (both Guardtra + GuardtraSafe)
+- **Frontend:** Vercel (both Pause Wallet + PauseSafe)
 - **Backend:** Supabase Edge Functions (Deno, same as Base44 functions)
 - **Database:** Supabase Postgres
 - **Auth:** Supabase Auth + Google OAuth

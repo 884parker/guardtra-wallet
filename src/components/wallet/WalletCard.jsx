@@ -12,7 +12,7 @@ const config = {
     tagline: 'Secure Storage',
   },
   guard: {
-    label: 'Hold Wallet',
+    label: 'Pause',
     icon: Activity,
     glowClass: 'guard-glow',
     accentColor: 'text-guard',

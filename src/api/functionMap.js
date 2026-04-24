@@ -10,6 +10,8 @@ export const FUNCTION_MAP = {
   'generateWallets': 'generate-wallets',
   // Separate endpoint for transfer history
   'getWalletTransfers': 'get-wallet-transfers',
+  // PIN/wallet operations now use functions.invoke('wallet', { action: '...' }) directly.
+  // These legacy mappings kept for backward compat if anything still calls them:
   'getSeedPhrase': 'wallet',
   'verifyPin': 'wallet',
   'setSecurityPin': 'wallet',
