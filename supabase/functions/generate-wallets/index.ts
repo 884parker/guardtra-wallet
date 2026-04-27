@@ -61,7 +61,7 @@ serve(async (req) => {
         user_id: user.id,
         wallet_type: type,
         address: wallet.address,
-        label: type.charAt(0).toUpperCase() + type.slice(1),
+        label: type === 'guard' ? 'Pause' : type.charAt(0).toUpperCase() + type.slice(1),
         is_system_managed: true,
         network: 'sepolia',
       });

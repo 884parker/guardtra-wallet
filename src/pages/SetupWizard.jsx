@@ -5,6 +5,7 @@ import { functions } from '@/api/db';
 import { useAuth } from '@/lib/AuthContext';
 
 const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
+const displayName = (type) => type === 'guard' ? 'Pause' : type.charAt(0).toUpperCase() + type.slice(1);
 
 export default function SetupWizard({ onComplete }) {
   const { logout } = useAuth();
@@ -368,7 +369,7 @@ export default function SetupWizard({ onComplete }) {
               {Object.entries(walletData.wallets).map(([type, address]) => (
                 <div key={type} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2">
                   <div>
-                    <span className="text-xs text-muted-foreground uppercase">{type}</span>
+                    <span className="text-xs text-muted-foreground uppercase">{displayName(type)}</span>
                     <p className="text-xs font-mono text-foreground">{address}</p>
                   </div>
                   <button onClick={() => copy(type, address)} className="text-muted-foreground hover:text-foreground p-1">
@@ -392,7 +393,7 @@ export default function SetupWizard({ onComplete }) {
                 Object.entries(walletData.backup).map(([type, phrase]) => (
                   <div key={type} className="bg-secondary/30 rounded-lg px-3 py-2">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-muted-foreground uppercase">{type}</span>
+                      <span className="text-xs text-muted-foreground uppercase">{displayName(type)}</span>
                       <button onClick={() => copy(`phrase-${type}`, phrase)} className="text-muted-foreground hover:text-foreground p-1">
                         {copied[`phrase-${type}`] ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
                       </button>
