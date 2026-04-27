@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Layers, Zap, Activity, Settings, BarChart2, Shield, ShieldCheck } from 'lucide-react';
+import { Layers, Zap, Activity, Settings, BarChart2, Shield } from 'lucide-react';
 import AlertBanner from './AlertBanner';
 import ConnectWalletButton from '@/components/wallet/ConnectWalletButton';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -9,7 +9,6 @@ const navItems = [
   { path: '/Vault', icon: Shield, label: 'Vault' },
   { path: '/Pause', icon: Activity, label: 'Pause' },
   { path: '/Liquidity', icon: Zap, label: 'Liquidity' },
-  { path: '/Recovery', icon: ShieldCheck, label: 'Recovery' },
   { path: '/Analytics', icon: BarChart2, label: 'Analytics' },
   { path: '/Settings', icon: Settings, label: 'Settings' },
 ];

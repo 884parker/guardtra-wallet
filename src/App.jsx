@@ -12,7 +12,8 @@ import Dashboard from '@/pages/Dashboard';
 import Vault from '@/pages/Vault';
 import Pause from '@/pages/Guard';
 import Liquidity from '@/pages/Liquidity';
-import Recovery from '@/pages/Recovery';
+// Recovery wallet is now a standalone app at guardtrasafe.com
+// import Recovery from '@/pages/Recovery';
 import Settings from '@/pages/Settings';
 import Analytics from '@/pages/Analytics';
 import AssetDetail from '@/pages/AssetDetail';
@@ -76,7 +77,6 @@ const AuthenticatedApp = () => {
         <Route path="/Vault" element={<Vault />} />
         <Route path="/Pause" element={<Pause />} />
         <Route path="/Liquidity" element={<Liquidity />} />
-        <Route path="/Recovery" element={<Recovery />} />
         <Route path="/Settings" element={<Settings />} />
         <Route path="/Analytics" element={<Analytics />} />
         <Route path="/AssetDetail" element={<AssetDetail />} />

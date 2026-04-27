@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Vault, Zap, ArrowRight, CheckCircle2, Loader2, Copy, Check, AlertTriangle, Eye, EyeOff, ShieldCheck, Delete, LogOut } from 'lucide-react';
+import { Shield, Vault, Zap, ArrowRight, CheckCircle2, Loader2, Copy, Check, AlertTriangle, Eye, EyeOff, ShieldCheck, Delete, LogOut, ExternalLink } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { functions } from '@/api/db';
 import { useAuth } from '@/lib/AuthContext';
@@ -8,40 +8,34 @@ const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 
 export default function SetupWizard({ onComplete }) {
   const { logout } = useAuth();
-  // Steps: welcome → safe-pin → safe-confirm → safe-creating → safe-backup → generating → main-backup → done
+  // Steps: welcome → recovery-address → generating → main-backup → done
   const [step, setStep] = useState('welcome');
   const [error, setError] = useState('');
 
-  // Safe PIN state
-  const [safePin, setSafePin] = useState('');
-  const [safeConfirmPin, setSafeConfirmPin] = useState('');
-  const [safePinError, setSafePinError] = useState('');
-
-  // Safe wallet result
-  const [safeAddress, setSafeAddress] = useState('');
-  const [safeSeedPhrase, setSafeSeedPhrase] = useState('');
+  // Recovery address (from guardtrasafe.com)
+  const [recoveryAddress, setRecoveryAddress] = useState('');
+  const [addressError, setAddressError] = useState('');
 
   // Main wallet result
   const [walletData, setWalletData] = useState(null);
 
   // UI state
   const [copied, setCopied] = useState({});
-  const [showSafePhrase, setShowSafePhrase] = useState(false);
   const [showMainPhrases, setShowMainPhrases] = useState(false);
-  const [safeBackedUp, setSafeBackedUp] = useState(false);
   const [mainBackedUp, setMainBackedUp] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Check if Safe wallet already exists (e.g., user signed up on Safe site previously)
-  const [existingSafe, setExistingSafe] = useState(null);
+  // Check if Recovery wallet already exists (e.g., user signed up on guardtrasafe.com previously)
+  const [existingRecovery, setExistingRecovery] = useState(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
 
   useEffect(() => {
-    // Check for existing Safe wallet in shared Supabase DB
+    // Check for existing Recovery wallet in shared Supabase DB
     base44.entities.UserWallet.list('-created_at', 1)
       .then(wallets => {
         if (wallets && wallets.length > 0 && wallets[0].address) {
-          setExistingSafe(wallets[0].address);
+          setExistingRecovery(wallets[0].address);
+          setRecoveryAddress(wallets[0].address);
         }
       })
       .catch(() => {})
@@ -54,111 +48,22 @@ export default function SetupWizard({ onComplete }) {
     setTimeout(() => setCopied(prev => ({ ...prev, [key]: false })), 2000);
   };
 
-  // ─── PIN Numpad Components ───
-  const appendPin = (field, d) => {
-    if (field === 'pin' && safePin.length < 6) setSafePin(p => p + d);
-    if (field === 'confirm' && safeConfirmPin.length < 6) setSafeConfirmPin(p => p + d);
-  };
-  const deletePin = (field) => {
-    if (field === 'pin') setSafePin(p => p.slice(0, -1));
-    if (field === 'confirm') setSafeConfirmPin(p => p.slice(0, -1));
-  };
-
-  const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'];
-
-  const Numpad = ({ field }) => (
-    <div className="grid grid-cols-3 gap-3 w-full max-w-[260px] mx-auto">
-      {digits.map((d, i) => {
-        if (d === '') return <div key={i} />;
-        if (d === 'del') return (
-          <button key={i} onClick={() => deletePin(field)}
-            className="h-14 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition-all">
-            <Delete className="w-5 h-5 text-muted-foreground" />
-          </button>
-        );
-        return (
-          <button key={i} onClick={() => appendPin(field, String(d))}
-            className="h-14 rounded-xl bg-secondary border border-border text-foreground text-xl font-semibold hover:bg-secondary/80 active:scale-95 transition-all">
-            {d}
-          </button>
-        );
-      })}
-    </div>
-  );
-
-  const PinDots = ({ value }) => (
-    <div className="flex gap-4 justify-center">
-      {[0, 1, 2, 3, 4, 5].map(i => (
-        <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${
-          i < value.length ? 'bg-emerald-400 border-emerald-400' : 'border-muted-foreground/40'
-        }`} />
-      ))}
-    </div>
-  );
-
-  // ─── Create Safe Wallet ───
-  const handleCreateSafe = async () => {
-    if (safePin !== safeConfirmPin) {
-      setSafePinError('PINs do not match. Please start over.');
-      setSafePin('');
-      setSafeConfirmPin('');
-      setStep('safe-pin');
-      return;
-    }
-    setStep('safe-creating');
-    setError('');
-    try {
-      const res = await functions.invoke('wallet', { action: 'create_wallet', pin: safePin });
-      if (res?.data?.error) throw new Error(res.data.error);
-      const createdAddress = res?.data?.address || '';
-      console.log('[SetupWizard] Safe wallet created, address:', createdAddress);
-      setSafeAddress(createdAddress);
-      // Fetch the seed phrase — the wallet edge function uses action 'get_seed_phrase'
-      // which decrypts the mnemonic with the PIN
-      try {
-        const seedRes = await functions.invoke('wallet', { action: 'get_seed_phrase', pin: safePin });
-        setSafeSeedPhrase(seedRes?.data?.seed_phrase || seedRes?.data?.seedPhrase || seedRes?.data?.mnemonic || '');
-      } catch (seedErr) {
-        // If seed phrase fetch fails, still proceed — user can access it later in Safe Settings
-        console.warn('Could not fetch seed phrase:', seedErr);
-        setSafeSeedPhrase('');
-      }
-      setStep('safe-backup');
-    } catch (err) {
-      console.error('Safe wallet creation failed:', err);
-      setError(err.message || 'Failed to create Safe wallet. Please try again.');
-      setSafePin('');
-      setSafeConfirmPin('');
-      setStep('safe-pin');
-    }
-  };
-
   // ─── Generate Main Wallets ───
   const handleGenerateWallets = async () => {
-    setLoading(true);
-    setError('');
-    setStep('generating');
-
-    // Use whatever Safe address we have — from creation or from DB
-    let addr = existingSafe || safeAddress;
-
-    // Fallback: if we still don't have the address, query the DB
-    if (!addr) {
-      try {
-        const wallets = await base44.entities.UserWallet.list('-created_at', 1);
-        if (wallets && wallets.length > 0 && wallets[0].address) {
-          addr = wallets[0].address;
-          setSafeAddress(addr);
-        }
-      } catch (e) {
-        console.warn('[SetupWizard] Could not fetch Safe address from DB:', e);
-      }
+    // Validate recovery address
+    const addr = recoveryAddress.trim();
+    if (!isValidEthAddress(addr)) {
+      setAddressError('Please enter a valid Ethereum address (0x...)');
+      return;
     }
 
-    console.log('[SetupWizard] Generating main wallets, Safe address:', addr);
+    setLoading(true);
+    setError('');
+    setAddressError('');
+    setStep('generating');
 
     try {
-      // Save the Safe wallet address for the main wallet
+      // Save the Recovery wallet address for the main wallet
       await base44.entities.AppConfig.create({ key: 'safe_wallet_address', value: addr });
 
       // Generate Vault, Pause, Liquidity wallets
@@ -169,52 +74,24 @@ export default function SetupWizard({ onComplete }) {
       setStep('main-backup');
     } catch (err) {
       setError(err.message || 'Failed to generate wallets');
-      setStep('safe-backup');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ─── Skip to main wallet generation (existing Safe) ───
-  const handleSkipToMain = async () => {
-    setLoading(true);
-    setError('');
-    setStep('generating');
-
-    try {
-      await base44.entities.AppConfig.create({ key: 'safe_wallet_address', value: existingSafe });
-      const res = await base44.functions.invoke('generateWallets', {});
-      if (res.data?.error) throw new Error(res.data.error);
-      setWalletData(res.data);
-      setStep('main-backup');
-    } catch (err) {
-      setError(err.message || 'Failed to generate wallets');
-      setStep('welcome');
+      setStep('recovery-address');
     } finally {
       setLoading(false);
     }
   };
 
   // ─── Progress indicator ───
-  const stepOrder = existingSafe
-    ? ['welcome', 'generating', 'main-backup', 'done']
-    : ['welcome', 'safe-pin', 'safe-confirm', 'safe-creating', 'safe-backup', 'generating', 'main-backup', 'done'];
-  const currentIdx = stepOrder.indexOf(step);
-  const progressLabels = existingSafe
-    ? ['Welcome', 'Generate', 'Backup', 'Done']
-    : ['Welcome', 'Safe', 'Safe', 'Safe', 'Safe Backup', 'Generate', 'Wallet Backup', 'Done'];
-
   const ProgressBar = () => {
-    const stages = existingSafe
+    const stages = existingRecovery
       ? [{ label: 'Welcome' }, { label: 'Generate' }, { label: 'Backup' }, { label: 'Done' }]
-      : [{ label: 'Account' }, { label: 'Safe' }, { label: 'Wallets' }, { label: 'Done' }];
+      : [{ label: 'Welcome' }, { label: 'Recovery' }, { label: 'Generate' }, { label: 'Done' }];
 
     let activeStage;
-    if (existingSafe) {
+    if (existingRecovery) {
       activeStage = step === 'welcome' ? 0 : step === 'generating' ? 1 : step === 'main-backup' ? 2 : 3;
     } else {
       activeStage = step === 'welcome' ? 0
-        : ['safe-pin', 'safe-confirm', 'safe-creating', 'safe-backup'].includes(step) ? 1
+        : step === 'recovery-address' ? 1
         : ['generating', 'main-backup'].includes(step) ? 2
         : 3;
     }
@@ -250,7 +127,7 @@ export default function SetupWizard({ onComplete }) {
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
         {/* Exit button */}
-        {step !== 'done' && step !== 'generating' && step !== 'safe-creating' && (
+        {step !== 'done' && step !== 'generating' && (
           <div className="flex justify-end">
             <button
               onClick={async () => { await logout(); }}
@@ -274,24 +151,24 @@ export default function SetupWizard({ onComplete }) {
             <div>
               <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to Pause Wallet</h1>
               <p className="text-muted-foreground">
-                {existingSafe
-                  ? "We found your Safe wallet! Let's generate your main wallets."
-                  : "Let's set up your complete four-layer security system. This takes about 3 minutes."}
+                {existingRecovery
+                  ? "We found your Recovery wallet! Let's generate your main wallets."
+                  : "Let's set up your three-wallet security system. First, you'll need your Recovery wallet."}
               </p>
             </div>
 
             <div className="bg-card border border-border rounded-xl p-5 w-full space-y-4 text-left">
-              <h3 className="text-sm font-semibold text-foreground">Here's what we'll do:</h3>
+              <h3 className="text-sm font-semibold text-foreground">How Pause Wallet Works:</h3>
               <div className="space-y-3">
-                {existingSafe ? (
+                {existingRecovery ? (
                   <>
                     <div className="flex items-start gap-3">
                       <div className="w-7 h-7 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Check className="w-4 h-4 text-green-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-green-400">Safe — Already set up!</p>
-                        <p className="text-xs text-muted-foreground font-mono">{existingSafe.slice(0, 10)}...{existingSafe.slice(-8)}</p>
+                        <p className="text-sm font-medium text-green-400">Recovery Wallet — Connected!</p>
+                        <p className="text-xs text-muted-foreground font-mono">{existingRecovery.slice(0, 10)}...{existingRecovery.slice(-8)}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -320,8 +197,10 @@ export default function SetupWizard({ onComplete }) {
                         <span className="text-xs font-bold text-green-400">1</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Create Safe Wallet</p>
-                        <p className="text-xs text-muted-foreground">Your emergency recovery wallet — set a PIN and back up the seed phrase.</p>
+                        <p className="text-sm font-medium text-foreground">Install Recovery Wallet</p>
+                        <p className="text-xs text-muted-foreground">
+                          Your Recovery wallet is a separate, standalone app. It's your safety net — completely isolated from this app.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -329,8 +208,8 @@ export default function SetupWizard({ onComplete }) {
                         <span className="text-xs font-bold text-primary">2</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Generate your wallets</p>
-                        <p className="text-xs text-muted-foreground">We'll create your Vault, Pause, and Liquidity wallets automatically.</p>
+                        <p className="text-sm font-medium text-foreground">Link your Recovery address</p>
+                        <p className="text-xs text-muted-foreground">Enter or paste the address from your Recovery wallet so revoked funds route there.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -338,8 +217,8 @@ export default function SetupWizard({ onComplete }) {
                         <span className="text-xs font-bold text-amber-400">3</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">Back up your recovery phrases</p>
-                        <p className="text-xs text-muted-foreground">Save them somewhere safe. They won't be shown again.</p>
+                        <p className="text-sm font-medium text-foreground">Generate & back up wallets</p>
+                        <p className="text-xs text-muted-foreground">We'll create your Vault, Pause, and Liquidity wallets automatically.</p>
                       </div>
                     </div>
                   </>
@@ -347,206 +226,101 @@ export default function SetupWizard({ onComplete }) {
               </div>
             </div>
 
+            {/* Security explainer */}
+            {!existingRecovery && (
+              <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 w-full">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-foreground font-medium mb-1">Why is Recovery separate?</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      If someone compromises this app, they get your Vault, Pause, and Liquidity wallets — but your Recovery wallet
+                      lives in a completely separate app they can't touch. When you revoke a suspicious transaction, funds go to your
+                      Recovery wallet where they're safe.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
-              onClick={existingSafe ? handleSkipToMain : () => setStep('safe-pin')}
+              onClick={existingRecovery ? handleGenerateWallets : () => setStep('recovery-address')}
               className="w-full bg-primary text-primary-foreground rounded-xl py-3.5 font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             >
-              Let's Go <ArrowRight className="w-4 h-4" />
+              {existingRecovery ? "Generate My Wallets" : "Let's Go"} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
 
         {/* ═══════════════════════════════════════
-            SAFE — SET PIN
+            RECOVERY ADDRESS INPUT
             ═══════════════════════════════════════ */}
-        {step === 'safe-pin' && (
+        {step === 'recovery-address' && (
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
               <ShieldCheck className="w-8 h-8 text-green-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Create Your Safe Wallet</h1>
+              <h1 className="text-xl font-bold text-foreground mb-2">Link Your Recovery Wallet</h1>
               <p className="text-muted-foreground text-sm">
-                Choose a 6-digit PIN. You'll need it to access your Safe wallet and send funds from it.
+                Enter the address from your Recovery wallet at guardtrasafe.com. This is where revoked funds will be sent.
               </p>
             </div>
 
-            {safePinError && (
-              <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive w-full">
-                {safePinError}
-              </div>
-            )}
+            {/* Link to install Recovery wallet */}
+            <a
+              href="https://guardtrasafe.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3 w-full text-sm text-green-400 hover:bg-green-500/20 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span className="font-medium">Don't have one yet? Install Recovery Wallet</span>
+              <ExternalLink className="w-3.5 h-3.5 ml-auto" />
+            </a>
+
+            {/* Address input */}
+            <div className="w-full space-y-2">
+              <label className="text-xs text-muted-foreground text-left block">Recovery Wallet Address</label>
+              <input
+                type="text"
+                value={recoveryAddress}
+                onChange={e => { setRecoveryAddress(e.target.value); setAddressError(''); }}
+                placeholder="0x..."
+                className="w-full bg-muted border border-border rounded-lg px-3 py-3 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-green-500"
+              />
+              {addressError && (
+                <p className="text-xs text-destructive text-left">{addressError}</p>
+              )}
+            </div>
+
             {error && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive w-full">
                 {error}
               </div>
             )}
 
-            <PinDots value={safePin} />
-            <Numpad field="pin" />
+            {/* Info */}
+            <div className="bg-card border border-border rounded-xl p-4 w-full text-left">
+              <h3 className="text-xs font-semibold text-foreground mb-2">How to get your Recovery address:</h3>
+              <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
+                <li>Go to <strong className="text-green-400">guardtrasafe.com</strong> and sign up</li>
+                <li>Set your PIN and create your Recovery wallet</li>
+                <li>Copy the wallet address and paste it here</li>
+              </ol>
+            </div>
 
             <div className="flex gap-3 w-full">
-              <button onClick={() => { setStep('welcome'); setSafePin(''); setSafePinError(''); setError(''); }} className="flex-1 border border-border text-muted-foreground rounded-xl py-3 text-sm hover:bg-secondary">Back</button>
+              <button onClick={() => { setStep('welcome'); setAddressError(''); setError(''); }} className="flex-1 border border-border text-muted-foreground rounded-xl py-3 text-sm hover:bg-secondary">Back</button>
               <button
-                onClick={() => { setSafePinError(''); setStep('safe-confirm'); }}
-                disabled={safePin.length !== 6}
-                className="flex-[2] bg-emerald-600 text-white rounded-xl py-3 font-medium text-sm hover:bg-emerald-700 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
+                onClick={handleGenerateWallets}
+                disabled={!recoveryAddress.trim() || loading}
+                className="flex-[2] bg-primary text-primary-foreground rounded-xl py-3 font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
               >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════
-            SAFE — CONFIRM PIN
-            ═══════════════════════════════════════ */}
-        {step === 'safe-confirm' && (
-          <div className="flex flex-col items-center gap-6 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-green-400" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Confirm PIN</h1>
-              <p className="text-muted-foreground text-sm">Re-enter your 6-digit PIN to confirm.</p>
-            </div>
-
-            {safePinError && (
-              <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive w-full">
-                {safePinError}
-              </div>
-            )}
-
-            <PinDots value={safeConfirmPin} />
-            <Numpad field="confirm" />
-
-            <div className="flex gap-3 w-full">
-              <button onClick={() => { setStep('safe-pin'); setSafePin(''); setSafeConfirmPin(''); setSafePinError(''); }} className="flex-1 border border-border text-muted-foreground rounded-xl py-3 text-sm hover:bg-secondary">Back</button>
-              <button
-                onClick={handleCreateSafe}
-                disabled={safeConfirmPin.length !== 6}
-                className="flex-[2] bg-emerald-600 text-white rounded-xl py-3 font-medium text-sm hover:bg-emerald-700 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
-              >
-                Create Safe Wallet <ShieldCheck className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════
-            SAFE — CREATING
-            ═══════════════════════════════════════ */}
-        {step === 'safe-creating' && (
-          <div className="flex flex-col items-center gap-6 text-center py-12">
-            <Loader2 className="w-12 h-12 text-green-400 animate-spin" />
-            <div>
-              <h1 className="text-xl font-bold text-foreground mb-2">Creating Safe Wallet</h1>
-              <p className="text-muted-foreground text-sm">Generating your emergency recovery wallet...</p>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════
-            SAFE — BACKUP SEED PHRASE
-            ═══════════════════════════════════════ */}
-        {step === 'safe-backup' && (
-          <div className="flex flex-col items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-green-400" />
-            </div>
-            <div className="text-center">
-              <h1 className="text-xl font-bold text-foreground mb-2">Safe Wallet Created!</h1>
-              <p className="text-muted-foreground text-sm">Back up your Safe wallet seed phrase before we continue.</p>
-            </div>
-
-            {/* Safe wallet address */}
-            <div className="bg-card border border-green-500/30 rounded-xl p-4 w-full">
-              <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-green-400 font-semibold uppercase tracking-wide">Safe Address</p>
-                  <button onClick={() => copy('safe-addr', safeAddress)} className="text-muted-foreground hover:text-foreground p-1">
-                    {copied['safe-addr'] ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-                <p className="font-mono text-xs text-foreground break-all leading-relaxed">{safeAddress}</p>
-              </div>
-            </div>
-
-            {/* Safe seed phrase */}
-            {safeSeedPhrase && (
-              <div className="bg-destructive/5 border border-destructive/30 rounded-xl p-4 w-full space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-destructive">Safe Wallet Seed Phrase</h3>
-                  <button onClick={() => setShowSafePhrase(!showSafePhrase)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                    {showSafePhrase ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    {showSafePhrase ? 'Hide' : 'Reveal'}
-                  </button>
-                </div>
-
-                {showSafePhrase ? (
-                  <div className="bg-secondary/30 rounded-lg px-3 py-2">
-                    <div className="flex items-center justify-end mb-1">
-                      <button onClick={() => copy('safe-phrase', safeSeedPhrase)} className="text-muted-foreground hover:text-foreground p-1">
-                        {copied['safe-phrase'] ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                      </button>
-                    </div>
-                    <p className="text-xs font-mono text-foreground leading-relaxed">{safeSeedPhrase}</p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-2">Click "Reveal" to see your seed phrase</p>
-                )}
-
-                <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-400">
-                    <strong>Write this down!</strong> Your Safe wallet seed phrase is your last line of defense.
-                    You can also view it later in Safe Settings at safe.pausewallet.com.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* If seed phrase couldn't be fetched */}
-            {!safeSeedPhrase && (
-              <div className="bg-card border border-border rounded-xl p-4 w-full">
-                <div className="flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Your Safe wallet seed phrase</strong> can be viewed in Safe Settings.
-                    Go to <a href="https://safe.pausewallet.com" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline font-medium">safe.pausewallet.com</a>,
-                    sign in with the same account, unlock with your PIN, and go to Settings to view it.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Confirmation */}
-            {safeSeedPhrase ? (
-              <label className="flex items-start gap-3 bg-card border border-border rounded-xl p-4 w-full cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={safeBackedUp}
-                  onChange={e => setSafeBackedUp(e.target.checked)}
-                  className="mt-0.5 accent-emerald-500"
-                />
-                <span className="text-sm text-foreground">I have saved my Safe wallet seed phrase in a secure location.</span>
-              </label>
-            ) : null}
-
-            {error && (
-              <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2 text-xs text-destructive w-full">
-                {error}
-              </div>
-            )}
-
-            <button
-              onClick={handleGenerateWallets}
-              disabled={(safeSeedPhrase && !safeBackedUp) || loading}
-              className="w-full bg-primary text-primary-foreground rounded-xl py-3.5 font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Continue — Generate Main Wallets <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         )}
 
@@ -580,14 +354,14 @@ export default function SetupWizard({ onComplete }) {
             <div className="bg-card border border-border rounded-xl p-4 w-full space-y-3">
               <h3 className="text-sm font-semibold text-foreground">Your Wallet Addresses</h3>
 
-              {/* Show Safe address first */}
+              {/* Show Recovery address first */}
               <div className="flex items-center justify-between bg-green-500/5 border border-green-500/20 rounded-lg px-3 py-2">
                 <div>
-                  <span className="text-xs text-green-400 uppercase font-semibold">Safe ✓</span>
-                  <p className="text-xs font-mono text-foreground">{existingSafe || safeAddress}</p>
+                  <span className="text-xs text-green-400 uppercase font-semibold">Recovery ✓</span>
+                  <p className="text-xs font-mono text-foreground">{recoveryAddress}</p>
                 </div>
-                <button onClick={() => copy('safe', existingSafe || safeAddress)} className="text-muted-foreground hover:text-foreground p-1">
-                  {copied['safe'] ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <button onClick={() => copy('recovery', recoveryAddress)} className="text-muted-foreground hover:text-foreground p-1">
+                  {copied['recovery'] ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
@@ -635,8 +409,8 @@ export default function SetupWizard({ onComplete }) {
             <div className="bg-card border border-border rounded-xl p-4 w-full">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">💡 Where to find seed phrases later:</strong><br />
-                • Safe wallet seed phrase → <strong className="text-green-400">Safe Settings</strong> (at safe.pausewallet.com)<br />
-                • Vault, Pause, Liquidity phrases → <strong className="text-primary">Pause Wallet Settings</strong> (this app)
+                • Recovery wallet seed phrase → <strong className="text-green-400">guardtrasafe.com</strong> (separate app)<br />
+                • Vault, Pause, Liquidity phrases → <strong className="text-primary">Settings</strong> (this app)
               </p>
             </div>
 
@@ -671,7 +445,7 @@ export default function SetupWizard({ onComplete }) {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground mb-2">You're All Set!</h1>
-              <p className="text-muted-foreground text-sm">Your four-layer security system is active. Loading your dashboard...</p>
+              <p className="text-muted-foreground text-sm">Your three-wallet security system is active. Loading your dashboard...</p>
             </div>
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
           </div>
