@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, Save, AlertTriangle, Clock, Globe } from 'lucide-react';
+import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, Save, AlertTriangle, Clock, Globe, Loader2 } from 'lucide-react';
 
 const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 import SeedPhraseModal from '@/components/wallet/SeedPhraseModal';
@@ -7,6 +7,7 @@ import SetPinModal from '@/components/settings/SetPinModal';
 import AlertRulesManager from '@/components/alerts/AlertRulesManager';
 import AlertLogViewer from '@/components/alerts/AlertLogViewer';
 import { base44 } from '@/api/base44Client';
+import { functions } from '@/api/db';
 
 const LOCK_OPTIONS = [
   { value: 6,  label: '6 hours',  desc: 'Faster releases, moderate protection' },
@@ -15,6 +16,17 @@ const LOCK_OPTIONS = [
 ];
 
 export default function Settings() {
+  // ─── PIN gate: must verify PIN before accessing Settings ───
+  const [pinVerified, setPinVerified] = useState(false);
+  const [gatePin, setGatePin] = useState('');
+  const [gatePinError, setGatePinError] = useState('');
+  const [gatePinLoading, setGatePinLoading] = useState(false);
+  const [gateAttempts, setGateAttempts] = useState(0);
+  const [gateLocked, setGateLocked] = useState(false);
+  const [gateLockTimer, setGateLockTimer] = useState(0);
+  const GATE_MAX_ATTEMPTS = 5;
+  const GATE_LOCKOUT_SECONDS = 60;
+
   const [seedWallet, setSeedWallet] = useState(null);
   const [pinExists, setPinExists] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
@@ -100,7 +112,125 @@ export default function Settings() {
     setTimeout(() => setSafeWalletSaved(false), 2000);
   };
 
+  // Gate lockout countdown
+  useEffect(() => {
+    if (!gateLocked) return;
+    const interval = setInterval(() => {
+      setGateLockTimer(prev => {
+        if (prev <= 1) { setGateLocked(false); setGateAttempts(0); clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [gateLocked]);
+
+  // Auto-submit gate PIN when 6 digits entered
+  useEffect(() => {
+    if (gatePin.length === 6 && !gatePinLoading && !gateLocked) verifyGatePin(gatePin);
+  }, [gatePin]);
+
+  const verifyGatePin = async (enteredPin) => {
+    setGatePinLoading(true);
+    setGatePinError('');
+    try {
+      const res = await functions.invoke('wallet', { action: 'verify_pin', pin: enteredPin });
+      if (res.data?.valid) {
+        setPinVerified(true);
+      } else {
+        const newAttempts = gateAttempts + 1;
+        setGateAttempts(newAttempts);
+        setGatePin('');
+        if (newAttempts >= GATE_MAX_ATTEMPTS) {
+          setGateLocked(true);
+          setGateLockTimer(GATE_LOCKOUT_SECONDS);
+          setGatePinError(`Too many attempts. Locked for ${GATE_LOCKOUT_SECONDS} seconds.`);
+        } else {
+          setGatePinError(`Wrong PIN. ${GATE_MAX_ATTEMPTS - newAttempts} attempts remaining.`);
+        }
+      }
+    } catch {
+      setGatePin('');
+      setGatePinError('Verification failed. Try again.');
+    } finally {
+      setGatePinLoading(false);
+    }
+  };
+
   const toggle = (key) => setNotifications(n => ({ ...n, [key]: !n[key] }));
+
+  // ─── PIN gate screen ───
+  if (!pinVerified) {
+    const gateDigits = [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'];
+    return (
+      <div className="md:ml-56 flex items-center justify-center min-h-[80vh] px-4">
+        <div className="w-full max-w-sm flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">Settings Locked</h1>
+            <p className="text-sm text-muted-foreground">Enter your PIN to access settings</p>
+          </div>
+
+          {/* PIN dots */}
+          <div className="flex gap-4 justify-center">
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <div
+                key={i}
+                className={`w-4 h-4 rounded-full border-2 transition-all ${
+                  i < gatePin.length
+                    ? gatePinError ? 'bg-destructive border-destructive' : 'bg-primary border-primary'
+                    : 'border-muted-foreground/40'
+                }`}
+              />
+            ))}
+          </div>
+
+          {gatePinLoading && <Loader2 className="w-5 h-5 text-primary animate-spin" />}
+
+          {gatePinError && (
+            <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-2 w-full">
+              <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+              <p className="text-xs text-destructive">{gatePinError}</p>
+            </div>
+          )}
+
+          {gateLocked && (
+            <p className="text-sm text-muted-foreground">
+              Try again in <span className="font-mono font-bold text-foreground">{gateLockTimer}s</span>
+            </p>
+          )}
+
+          {/* Numpad */}
+          <div className="grid grid-cols-3 gap-3 w-full max-w-[260px]">
+            {gateDigits.map((d, i) => {
+              if (d === '') return <div key={i} />;
+              if (d === 'del') return (
+                <button
+                  key={i}
+                  onClick={() => { if (!gatePinLoading && !gateLocked) setGatePin(prev => prev.slice(0, -1)); }}
+                  disabled={gatePinLoading || gateLocked}
+                  className="h-14 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition-all disabled:opacity-30"
+                >
+                  ←
+                </button>
+              );
+              return (
+                <button
+                  key={i}
+                  onClick={() => { if (gatePin.length < 6 && !gatePinLoading && !gateLocked) { setGatePin(prev => prev + String(d)); setGatePinError(''); } }}
+                  disabled={gatePinLoading || gateLocked}
+                  className="h-14 rounded-xl bg-secondary border border-border text-foreground text-xl font-semibold hover:bg-secondary/80 active:scale-95 transition-all disabled:opacity-30"
+                >
+                  {d}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="md:ml-56 space-y-5">

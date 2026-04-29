@@ -10,8 +10,13 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    // Check current session
-    checkSession();
+    // Security: clear any persisted session on fresh page load.
+    // Wallet users must always sign in — no auto-resume from localStorage.
+    supabase.auth.signOut().then(() => {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoadingAuth(false);
+    });
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
