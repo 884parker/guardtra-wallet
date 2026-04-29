@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, Save, AlertTriangle, Clock, Globe, Loader2 } from 'lucide-react';
-
-const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
+import { Shield, Bell, Lock, ChevronRight, Wifi, Eye, KeyRound, AlertTriangle, Clock, Globe, Loader2 } from 'lucide-react';
 import SeedPhraseModal from '@/components/wallet/SeedPhraseModal';
 import SetPinModal from '@/components/settings/SetPinModal';
 import AlertRulesManager from '@/components/alerts/AlertRulesManager';
@@ -31,10 +29,6 @@ export default function Settings() {
   const [pinExists, setPinExists] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [notifications, setNotifications] = useState({ vaultAlert: true, guardRelease: true, email: false });
-  const [safeWalletAddress, setsafeWalletAddress] = useState('');
-  const [safeWalletConfigId, setsafeWalletConfigId] = useState(null);
-  const [safeWalletSaving, setSafeWalletSaving] = useState(false);
-  const [safeWalletSaved, setSafeWalletSaved] = useState(false);
 
   // Guard lock time
   const [lockHours, setLockHours] = useState(24);
@@ -53,11 +47,6 @@ export default function Settings() {
     // If user_wallets has a record, they have a PIN (it's required during Safe wallet creation)
     base44.entities.UserWallet.list('-created_at', 1)
       .then(res => setPinExists(res && res.length > 0 && !!res[0].pin_hash))
-      .catch(() => {});
-    base44.entities.AppConfig.filter({ key: 'safe_wallet_address' })
-      .then(res => {
-        if (res[0]) { setsafeWalletAddress(res[0].value); setsafeWalletConfigId(res[0].id); }
-      })
       .catch(() => {});
     base44.entities.AppConfig.filter({ key: 'guard_lock_hours' })
       .then(res => {
@@ -97,19 +86,6 @@ export default function Settings() {
     setLockSaving(false);
     setLockSaved(true);
     setTimeout(() => setLockSaved(false), 2000);
-  };
-
-  const savesafeWalletAddress = async () => {
-    setSafeWalletSaving(true);
-    if (safeWalletConfigId) {
-      await base44.entities.AppConfig.update(safeWalletConfigId, { value: safeWalletAddress });
-    } else {
-      const rec = await base44.entities.AppConfig.create({ key: 'safe_wallet_address', value: safeWalletAddress });
-      setsafeWalletConfigId(rec.id);
-    }
-    setSafeWalletSaving(false);
-    setSafeWalletSaved(true);
-    setTimeout(() => setSafeWalletSaved(false), 2000);
   };
 
   // Gate lockout countdown
@@ -237,33 +213,6 @@ export default function Settings() {
       <div>
         <h1 className="text-xl font-bold text-foreground mb-1">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your security preferences and wallet settings.</p>
-      </div>
-
-      {/* Wallet Setup */}
-      <div>
-        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Wallet Setup</h2>
-        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-          <div>
-            <label className="text-sm font-medium text-foreground block mb-1">Safe Wallet Address</label>
-            <p className="text-xs text-muted-foreground mb-2">Your Safe recovery wallet address. Revoked transactions are automatically routed here for safekeeping.</p>
-            <div className="flex gap-2">
-              <input
-                value={safeWalletAddress}
-                onChange={e => { setsafeWalletAddress(e.target.value); setSafeWalletSaved(false); }}
-                placeholder="0x..."
-                className="flex-1 bg-muted border border-border rounded-xl px-3 py-2.5 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-              />
-              <button
-                onClick={savesafeWalletAddress}
-                disabled={!safeWalletAddress || safeWalletSaving || !isValidEthAddress(safeWalletAddress)}
-                className="flex items-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-4 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
-              >
-                <Save className="w-3.5 h-3.5" />
-                {safeWalletSaving ? 'Saving...' : safeWalletSaved ? 'Saved!' : 'Save'}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Guard Lock Time */}
