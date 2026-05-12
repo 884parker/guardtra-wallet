@@ -160,10 +160,14 @@ serve(async (req) => {
         }
         await supabase.from('user_wallets').update({ pin_hash: newPinHash }).eq('id', walletRecord.id);
       } else {
-        // No wallet record yet (main wallet flow) — create a minimal one for PIN storage
+        // No wallet record yet (main wallet flow) — create one for PIN storage
+        // address/encrypted fields are NOT NULL in schema, use placeholders (main wallet stores keys separately)
         await supabase.from('user_wallets').insert({
           user_id: user.id,
           owner_email: user.email || '',
+          address: 'main-wallet-pin-only',
+          encrypted_private_key: 'n/a',
+          encrypted_mnemonic: 'n/a',
           pin_hash: newPinHash,
           network: 'sepolia',
         });
