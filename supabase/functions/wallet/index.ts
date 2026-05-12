@@ -96,13 +96,7 @@ serve(async (req) => {
     if (action === 'verify_pin') {
       const pinHash = await hashPin(pin);
 
-      // First check user_wallets (safe wallet flow)
-      if (walletRecord?.pin_hash) {
-        const valid = pinHash === walletRecord.pin_hash;
-        return new Response(JSON.stringify({ valid, address: valid ? walletRecord.address : null }), { headers: corsHeaders });
-      }
-
-      // Fallback: check app_config (main wallet flow)
+      // Check app_config first (main wallet stores PIN here)
       const { data: configPin } = await supabase
         .from('app_config')
         .select('value')
@@ -113,6 +107,12 @@ serve(async (req) => {
       if (configPin) {
         const valid = pinHash === configPin.value;
         return new Response(JSON.stringify({ valid }), { headers: corsHeaders });
+      }
+
+      // Fallback: check user_wallets (safe wallet flow)
+      if (walletRecord?.pin_hash) {
+        const valid = pinHash === walletRecord.pin_hash;
+        return new Response(JSON.stringify({ valid, address: valid ? walletRecord.address : null }), { headers: corsHeaders });
       }
 
       return new Response(JSON.stringify({ error: 'No PIN set' }), { status: 404, headers: corsHeaders });
