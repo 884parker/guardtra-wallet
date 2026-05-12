@@ -32,15 +32,20 @@ export default function PinLockScreen({ onUnlock, onNeedPin }) {
     requestNotificationPermission();
   }, []);
 
-  // On mount, check if user has a Safe wallet (which means PIN exists)
+  // On mount, check if user has a PIN set (in user_wallets OR app_config)
   useEffect(() => {
-    entities.UserWallet.list('-created_at', 1)
-      .then(wallets => {
-        if (!wallets || wallets.length === 0) {
-          // No Safe wallet = no PIN = needs setup
+    Promise.all([
+      entities.UserWallet.list('-created_at', 1),
+      entities.AppConfig.filter({ key: 'pin_hash' }),
+    ])
+      .then(([wallets, pinConfigs]) => {
+        const hasWallet = wallets && wallets.length > 0;
+        const hasPinConfig = pinConfigs && pinConfigs.length > 0;
+        if (!hasWallet && !hasPinConfig) {
+          // No PIN anywhere = needs setup
           onNeedPin?.();
         }
-        // Otherwise wallet exists, show PIN unlock screen
+        // Otherwise PIN exists, show unlock screen
       })
       .catch(() => {
         // If query fails, still show PIN screen (safe fallback)

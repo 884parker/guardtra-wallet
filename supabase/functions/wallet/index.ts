@@ -94,10 +94,28 @@ serve(async (req) => {
 
     // === VERIFY PIN ===
     if (action === 'verify_pin') {
-      if (!walletRecord) return new Response(JSON.stringify({ error: 'No wallet found' }), { status: 404, headers: corsHeaders });
       const pinHash = await hashPin(pin);
-      const valid = pinHash === walletRecord.pin_hash;
-      return new Response(JSON.stringify({ valid, address: valid ? walletRecord.address : null }), { headers: corsHeaders });
+
+      // First check user_wallets (safe wallet flow)
+      if (walletRecord?.pin_hash) {
+        const valid = pinHash === walletRecord.pin_hash;
+        return new Response(JSON.stringify({ valid, address: valid ? walletRecord.address : null }), { headers: corsHeaders });
+      }
+
+      // Fallback: check app_config (main wallet flow)
+      const { data: configPin } = await supabase
+        .from('app_config')
+        .select('value')
+        .eq('user_id', user.id)
+        .eq('key', 'pin_hash')
+        .maybeSingle();
+
+      if (configPin) {
+        const valid = pinHash === configPin.value;
+        return new Response(JSON.stringify({ valid }), { headers: corsHeaders });
+      }
+
+      return new Response(JSON.stringify({ error: 'No PIN set' }), { status: 404, headers: corsHeaders });
     }
 
     // === GET BALANCE ===
@@ -148,28 +166,26 @@ serve(async (req) => {
       return new Response(JSON.stringify({ tx_hash: tx.hash }), { headers: corsHeaders });
     }
 
-    // === SET PIN (first-time setup — no existing PIN required) ===
+    // === SET PIN (first-time setup — stores in app_config for main wallet) ===
     if (action === 'set_pin') {
       if (!newPin || newPin.length !== 6) return new Response(JSON.stringify({ error: 'PIN must be 6 digits' }), { status: 400, headers: corsHeaders });
       const newPinHash = await hashPin(newPin);
 
-      if (walletRecord) {
-        // Wallet exists but has no PIN yet — just set the hash
-        if (walletRecord.pin_hash) {
-          return new Response(JSON.stringify({ error: 'PIN already set. Use change_pin instead.' }), { status: 400, headers: corsHeaders });
-        }
-        await supabase.from('user_wallets').update({ pin_hash: newPinHash }).eq('id', walletRecord.id);
+      // Check if PIN already exists in app_config
+      const { data: existing } = await supabase
+        .from('app_config')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('key', 'pin_hash')
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from('app_config').update({ value: newPinHash }).eq('id', existing.id);
       } else {
-        // No wallet record yet (main wallet flow) — create one for PIN storage
-        // address/encrypted fields are NOT NULL in schema, use placeholders (main wallet stores keys separately)
-        await supabase.from('user_wallets').insert({
+        await supabase.from('app_config').insert({
           user_id: user.id,
-          owner_email: user.email || '',
-          address: 'main-wallet-pin-only',
-          encrypted_private_key: 'n/a',
-          encrypted_mnemonic: 'n/a',
-          pin_hash: newPinHash,
-          network: 'sepolia',
+          key: 'pin_hash',
+          value: newPinHash,
         });
       }
 
