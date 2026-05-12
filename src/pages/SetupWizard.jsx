@@ -7,15 +7,22 @@ import { useAuth } from '@/lib/AuthContext';
 const isValidEthAddress = (addr) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 const displayName = (type) => type === 'guard' ? 'Pause' : type.charAt(0).toUpperCase() + type.slice(1);
 
+// Check for safe_address URL param (handoff from guardtrasafe.com setup)
+const getUrlSafeAddress = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('safe_address') || '';
+};
+
 export default function SetupWizard({ onComplete }) {
   const { logout } = useAuth();
   // Steps: welcome → recovery-address → generating → main-backup → done
   const [step, setStep] = useState('welcome');
   const [error, setError] = useState('');
 
-  // Recovery address (from guardtrasafe.com)
-  const [recoveryAddress, setRecoveryAddress] = useState('');
+  // Recovery address (from guardtrasafe.com — may arrive via URL param)
+  const [recoveryAddress, setRecoveryAddress] = useState(getUrlSafeAddress());
   const [addressError, setAddressError] = useState('');
+  const [fromHandoff] = useState(() => !!getUrlSafeAddress());
 
   // Main wallet result
   const [walletData, setWalletData] = useState(null);
@@ -31,7 +38,16 @@ export default function SetupWizard({ onComplete }) {
   const [checkingExisting, setCheckingExisting] = useState(true);
 
   useEffect(() => {
-    // Check for existing Recovery wallet in shared Supabase DB
+    // If safe address arrived via URL param (handoff from guardtrasafe.com), use it directly
+    const urlAddr = getUrlSafeAddress();
+    if (urlAddr && isValidEthAddress(urlAddr)) {
+      setExistingRecovery(urlAddr);
+      setRecoveryAddress(urlAddr);
+      setCheckingExisting(false);
+      return;
+    }
+
+    // Otherwise check for existing Recovery wallet in shared Supabase DB
     base44.entities.UserWallet.list('-created_at', 1)
       .then(wallets => {
         if (wallets && wallets.length > 0 && wallets[0].address) {
