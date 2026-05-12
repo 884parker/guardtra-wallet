@@ -15,7 +15,7 @@ const getUrlSafeAddress = () => {
 
 export default function SetupWizard({ onComplete }) {
   const { logout } = useAuth();
-  // Steps: welcome → recovery-address → generating → main-backup → done
+  // Steps: welcome → recovery-address → generating → main-backup → create-pin → done
   const [step, setStep] = useState('welcome');
   const [error, setError] = useState('');
 
@@ -32,6 +32,13 @@ export default function SetupWizard({ onComplete }) {
   const [showMainPhrases, setShowMainPhrases] = useState(false);
   const [mainBackedUp, setMainBackedUp] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // PIN creation state
+  const [pinStep, setPinStep] = useState('new'); // 'new' → 'confirm'
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
 
   // Check if Recovery wallet already exists (e.g., user signed up on guardtrasafe.com previously)
   const [existingRecovery, setExistingRecovery] = useState(null);
@@ -100,17 +107,18 @@ export default function SetupWizard({ onComplete }) {
   // ─── Progress indicator ───
   const ProgressBar = () => {
     const stages = existingRecovery
-      ? [{ label: 'Welcome' }, { label: 'Generate' }, { label: 'Backup' }, { label: 'Done' }]
-      : [{ label: 'Welcome' }, { label: 'Recovery' }, { label: 'Generate' }, { label: 'Done' }];
+      ? [{ label: 'Welcome' }, { label: 'Generate' }, { label: 'Backup' }, { label: 'PIN' }, { label: 'Done' }]
+      : [{ label: 'Welcome' }, { label: 'Recovery' }, { label: 'Generate' }, { label: 'PIN' }, { label: 'Done' }];
 
     let activeStage;
     if (existingRecovery) {
-      activeStage = step === 'welcome' ? 0 : step === 'generating' ? 1 : step === 'main-backup' ? 2 : 3;
+      activeStage = step === 'welcome' ? 0 : step === 'generating' ? 1 : step === 'main-backup' ? 2 : step === 'create-pin' ? 3 : 4;
     } else {
       activeStage = step === 'welcome' ? 0
         : step === 'recovery-address' ? 1
         : ['generating', 'main-backup'].includes(step) ? 2
-        : 3;
+        : step === 'create-pin' ? 3
+        : 4;
     }
 
     return (
@@ -443,12 +451,146 @@ export default function SetupWizard({ onComplete }) {
             </label>
 
             <button
-              onClick={() => { setStep('done'); setTimeout(() => onComplete(), 1500); }}
+              onClick={() => setStep('create-pin')}
               disabled={!mainBackedUp}
               className="w-full bg-primary text-primary-foreground rounded-xl py-3.5 font-medium text-sm hover:opacity-90 disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
             >
-              <CheckCircle2 className="w-4 h-4" /> I'm All Set — Open My Wallet
+              Next — Create Your PIN <ArrowRight className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════
+            CREATE PIN
+            ═══════════════════════════════════════ */}
+        {step === 'create-pin' && (
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+              <Shield className="w-8 h-8 text-primary" />
+            </div>
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-foreground mb-2">
+                {pinStep === 'new' ? 'Create a 6-Digit PIN' : 'Confirm Your PIN'}
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                {pinStep === 'new'
+                  ? "You'll use this PIN every time you open your wallet."
+                  : 'Re-enter your PIN to confirm.'}
+              </p>
+            </div>
+
+            {/* PIN dots */}
+            <div className="flex gap-4 justify-center">
+              {[0, 1, 2, 3, 4, 5].map(i => {
+                const activeVal = pinStep === 'new' ? newPin : confirmPin;
+                return (
+                  <div
+                    key={i}
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
+                      i < activeVal.length
+                        ? pinError ? 'bg-destructive border-destructive' : 'bg-primary border-primary'
+                        : 'border-muted-foreground/40'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            {pinError && (
+              <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-2 w-full">
+                <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+                <p className="text-xs text-destructive">{pinError}</p>
+              </div>
+            )}
+
+            {pinLoading && <Loader2 className="w-5 h-5 text-primary animate-spin" />}
+
+            {/* Numpad */}
+            <div className="grid grid-cols-3 gap-3 w-full max-w-[260px]">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'].map((d, i) => {
+                if (d === '') return <div key={i} />;
+                if (d === 'del') return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (pinStep === 'new') setNewPin(prev => prev.slice(0, -1));
+                      else setConfirmPin(prev => prev.slice(0, -1));
+                      setPinError('');
+                    }}
+                    disabled={pinLoading}
+                    className="h-14 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center hover:bg-secondary/80 active:scale-95 transition-all disabled:opacity-30"
+                  >
+                    <Delete className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                );
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setPinError('');
+                      if (pinStep === 'new') {
+                        const next = newPin + String(d);
+                        setNewPin(next);
+                        if (next.length === 6) {
+                          // Auto-advance to confirm
+                          setTimeout(() => setPinStep('confirm'), 200);
+                        }
+                      } else {
+                        const next = confirmPin + String(d);
+                        setConfirmPin(next);
+                        if (next.length === 6) {
+                          // Auto-verify
+                          if (next !== newPin) {
+                            setTimeout(() => {
+                              setPinError('PINs do not match. Try again.');
+                              setConfirmPin('');
+                            }, 200);
+                          } else {
+                            // Save PIN
+                            setPinLoading(true);
+                            setTimeout(async () => {
+                              try {
+                                const res = await functions.invoke('wallet', {
+                                  action: 'change_pin',
+                                  pin: '',
+                                  newPin: next,
+                                });
+                                if (res.data?.success) {
+                                  setStep('done');
+                                  setTimeout(() => onComplete(), 1500);
+                                } else {
+                                  setPinError(res.data?.error || 'Failed to save PIN. Try again.');
+                                  setConfirmPin('');
+                                }
+                              } catch (err) {
+                                setPinError('Failed to save PIN. Try again.');
+                                setConfirmPin('');
+                              } finally {
+                                setPinLoading(false);
+                              }
+                            }, 200);
+                          }
+                        }
+                      }
+                    }}
+                    disabled={pinLoading}
+                    className="h-14 rounded-xl bg-secondary border border-border text-foreground text-xl font-semibold hover:bg-secondary/80 active:scale-95 transition-all disabled:opacity-30"
+                  >
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Back button for confirm step */}
+            {pinStep === 'confirm' && !pinLoading && (
+              <button
+                onClick={() => { setPinStep('new'); setNewPin(''); setConfirmPin(''); setPinError(''); }}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                ← Start over
+              </button>
+            )}
           </div>
         )}
 
