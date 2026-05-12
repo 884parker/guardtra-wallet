@@ -148,6 +148,30 @@ serve(async (req) => {
       return new Response(JSON.stringify({ tx_hash: tx.hash }), { headers: corsHeaders });
     }
 
+    // === SET PIN (first-time setup — no existing PIN required) ===
+    if (action === 'set_pin') {
+      if (!newPin || newPin.length !== 6) return new Response(JSON.stringify({ error: 'PIN must be 6 digits' }), { status: 400, headers: corsHeaders });
+      const newPinHash = await hashPin(newPin);
+
+      if (walletRecord) {
+        // Wallet exists but has no PIN yet — just set the hash
+        if (walletRecord.pin_hash) {
+          return new Response(JSON.stringify({ error: 'PIN already set. Use change_pin instead.' }), { status: 400, headers: corsHeaders });
+        }
+        await supabase.from('user_wallets').update({ pin_hash: newPinHash }).eq('id', walletRecord.id);
+      } else {
+        // No wallet record yet (main wallet flow) — create a minimal one for PIN storage
+        await supabase.from('user_wallets').insert({
+          user_id: user.id,
+          owner_email: user.email || '',
+          pin_hash: newPinHash,
+          network: 'sepolia',
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    }
+
     // === CHANGE PIN ===
     if (action === 'change_pin') {
       if (!walletRecord) return new Response(JSON.stringify({ error: 'No wallet found' }), { status: 404, headers: corsHeaders });

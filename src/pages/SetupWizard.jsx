@@ -551,8 +551,7 @@ export default function SetupWizard({ onComplete }) {
                             setTimeout(async () => {
                               try {
                                 const res = await functions.invoke('wallet', {
-                                  action: 'change_pin',
-                                  pin: '',
+                                  action: 'set_pin',
                                   newPin: next,
                                 });
                                 if (res.data?.success) {
