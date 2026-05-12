@@ -562,7 +562,7 @@ export default function SetupWizard({ onComplete }) {
                                   setConfirmPin('');
                                 }
                               } catch (err) {
-                                setPinError('Failed to save PIN. Try again.');
+                                setPinError('Failed to save PIN: ' + (err.message || 'Unknown error'));
                                 setConfirmPin('');
                               } finally {
                                 setPinLoading(false);

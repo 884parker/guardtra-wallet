@@ -56,7 +56,10 @@ const AuthenticatedApp = () => {
   // Show setup wizard fullscreen (no sidebar/nav)
   // Also shown when user hasn't set up a PIN yet (needsPinSetup from PinLockScreen)
   if (needsSetup || needsPinSetup) {
-    return <SetupWizard onComplete={() => { window.location.href = '/Dashboard'; }} />;
+    return <SetupWizard onComplete={() => {
+      // Clean URL params (remove safe_address handoff) and reload fresh
+      window.location.href = window.location.origin + '/Dashboard';
+    }} />;
   }
 
   // PIN unlock gate — must enter PIN every time the app loads

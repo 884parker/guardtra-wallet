@@ -180,13 +180,15 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
-        await supabase.from('app_config').update({ value: newPinHash }).eq('id', existing.id);
+        const { error: updateErr } = await supabase.from('app_config').update({ value: newPinHash }).eq('id', existing.id);
+        if (updateErr) return new Response(JSON.stringify({ error: 'Failed to update PIN: ' + updateErr.message }), { status: 500, headers: corsHeaders });
       } else {
-        await supabase.from('app_config').insert({
+        const { error: insertErr } = await supabase.from('app_config').insert({
           user_id: user.id,
           key: 'pin_hash',
           value: newPinHash,
         });
+        if (insertErr) return new Response(JSON.stringify({ error: 'Failed to save PIN: ' + insertErr.message }), { status: 500, headers: corsHeaders });
       }
 
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
