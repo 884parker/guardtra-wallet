@@ -57,8 +57,12 @@ const AuthenticatedApp = () => {
   // Also shown when user hasn't set up a PIN yet (needsPinSetup from PinLockScreen)
   if (needsSetup || needsPinSetup) {
     return <SetupWizard onComplete={() => {
-      // Clean URL params (remove safe_address handoff) and reload fresh
-      window.location.href = window.location.origin + '/Dashboard';
+      // Setup done — clear URL params and transition to PIN unlock without full reload
+      window.history.replaceState({}, '', '/Dashboard');
+      setNeedsSetup(false);
+      setNeedsPinSetup(false);
+      setPinUnlocked(false);
+      setCheckingSetup(false);
     }} />;
   }
 
